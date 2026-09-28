@@ -6,6 +6,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import ScrollToTop from './components/common/ScrollToTop';
+import FestivalChatbot from './components/chat/FestivalChatbot';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -60,6 +61,7 @@ export default function App() {
           </main>
 
           <Footer />
+          <FestivalChatbot />
         </div>
       </Router>
     </AuthProvider>

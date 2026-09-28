@@ -35,7 +35,7 @@ export default function CertificateModal({ certificate, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150">
       <div className="relative w-full max-w-4xl bg-white rounded-3xl border-3 border-[#121217] fest-shadow-xl p-4 sm:p-8 my-8">
-        
+
         {/* Top Controls */}
         <div className="flex items-center justify-between pb-4 border-b border-stone-200 mb-6">
           <div className="flex items-center gap-2">
@@ -122,7 +122,7 @@ export default function CertificateModal({ certificate, onClose }) {
 
           {/* Certificate Footer: Signatures, ID, and Verification QR */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 items-end pt-6 border-t border-stone-200">
-            
+
             {/* Signature 1 */}
             <div className="text-left space-y-1">
               <p className="font-hand text-2xl text-stone-800 -rotate-3">

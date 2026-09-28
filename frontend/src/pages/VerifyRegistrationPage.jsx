@@ -26,7 +26,7 @@ export default function VerifyRegistrationPage() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="max-w-lg w-full bg-white border-3 border-[#121217] rounded-3xl p-6 sm:p-10 fest-shadow-xl space-y-6 text-center">
-        
+
         {/* Festival Header */}
         <div>
           <div className="inline-flex items-center gap-1 font-display font-black text-2xl tracking-tight mb-2">
@@ -66,7 +66,7 @@ export default function VerifyRegistrationPage() {
           </div>
         ) : (
           <div className="space-y-6 animate-in zoom-in-95">
-            
+
             {/* Verified Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-800 border-2 border-emerald-400 text-xs font-black uppercase fest-shadow-sm">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />

@@ -10,7 +10,7 @@ export default function QRModal({ registration, event, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div className="relative w-full max-w-md bg-white border-3 border-[#121217] rounded-3xl p-6 sm:p-8 fest-shadow-xl overflow-hidden">
-        
+
         {/* Close Button */}
         <button
           onClick={onClose}

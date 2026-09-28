@@ -100,4 +100,8 @@ export const adminAPI = {
   getStats: () => api.get('/admin/stats'),
 };
 
+export const chatAPI = {
+  sendMessage: (message, history = []) => api.post('/chat', { message, history }),
+};
+
 export default api;

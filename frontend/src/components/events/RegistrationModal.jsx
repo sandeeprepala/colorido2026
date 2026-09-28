@@ -107,7 +107,7 @@ export default function RegistrationModal({ event, onClose, onSuccess }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150">
       <div className="relative w-full max-w-xl bg-white rounded-3xl border-3 border-[#121217] fest-shadow-xl p-6 sm:p-8 my-8">
-        
+
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -202,7 +202,7 @@ export default function RegistrationModal({ event, onClose, onSuccess }) {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              
+
               {/* Personal Details Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -332,12 +332,11 @@ export default function RegistrationModal({ event, onClose, onSuccess }) {
                         <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-purple-100 text-[#8E44FF] border border-purple-200">
                           Allowed: {minTeam} - {maxTeam} Members
                         </span>
-                        <span className={`text-[11px] font-black px-2 py-0.5 rounded-full border ${
-                          1 + teamMembers.filter((m) => m && m.trim().length > 0).length >= minTeam &&
-                          1 + teamMembers.filter((m) => m && m.trim().length > 0).length <= maxTeam
+                        <span className={`text-[11px] font-black px-2 py-0.5 rounded-full border ${1 + teamMembers.filter((m) => m && m.trim().length > 0).length >= minTeam &&
+                            1 + teamMembers.filter((m) => m && m.trim().length > 0).length <= maxTeam
                             ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                             : 'bg-amber-100 text-amber-800 border-amber-300'
-                        }`}>
+                          }`}>
                           Current: {1 + teamMembers.filter((m) => m && m.trim().length > 0).length} / {maxTeam}
                         </span>
                       </div>

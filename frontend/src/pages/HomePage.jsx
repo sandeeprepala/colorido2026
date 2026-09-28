@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Sparkles, ArrowRight, Calendar, MapPin, Trophy, MessageSquare, 
+import {
+  Sparkles, ArrowRight, Calendar, MapPin, Trophy, MessageSquare,
   Store, Flame, ArrowUpRight, CheckCircle2, ShieldCheck, Heart
 } from 'lucide-react';
 import CountdownTimer from '../components/common/CountdownTimer';
@@ -27,7 +27,7 @@ export default function HomePage() {
           discussionAPI.getDiscussion(),
         ]);
         setEvents(eventsRes.data.events || []);
-        
+
         const live = (lbRes.data.leaderboards || []).find((b) => b.status === 'LIVE') || lbRes.data.leaderboards?.[0];
         setLiveLeaderboard(live);
 
@@ -48,15 +48,15 @@ export default function HomePage() {
 
   return (
     <div className="space-y-20 sm:space-y-28">
-      
+
       {/* 1. HERO SECTION (Inspired by the COLORIDO '26 Poster) */}
       <section className="relative pt-6 sm:pt-12 pb-12 overflow-hidden">
-        
+
         {/* Subtle decorative background noise */}
         <div className="absolute inset-0 bg-grain opacity-60 pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          
+
           {/* Top Tagline Sticker & Category Badges */}
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6 sm:mb-8">
             <div className="inline-flex items-center gap-2 bg-white border-2 border-[#121217] px-4 py-1.5 rounded-full fest-shadow-sm -rotate-1 hover:rotate-0 transition-transform">
@@ -85,12 +85,12 @@ export default function HomePage() {
 
           {/* Main Hero Display Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            
+
             {/* Left Column: Oversized Experimental Typography */}
             <div className="lg:col-span-7 space-y-6">
-              
+
               <div className="relative select-none">
-                
+
                 {/* Hand-drawn decorative star */}
                 <div className="absolute -top-6 -left-4 text-3xl font-black text-[#FF7A00] animate-spin" style={{ animationDuration: '12s' }}>
                   ✦
@@ -121,7 +121,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center gap-2 bg-white border-2 border-[#121217] px-4 py-2 rounded-2xl fest-shadow-sm font-bold text-xs sm:text-sm text-[#121217]">
                   <MapPin className="w-4 h-4 text-[#E91E63]" />
-                  <span>APEX CAMPUS &amp; SPORTS ARENA</span>
+                  <span>R.V.R &amp; J.C College of Engineering</span>
                 </div>
               </div>
 
@@ -149,7 +149,7 @@ export default function HomePage() {
             {/* Right Column: Festival Collage Poster Artwork */}
             <div className="lg:col-span-5 relative">
               <div className="relative mx-auto max-w-md lg:max-w-none">
-                
+
                 {/* Vintage Festival Poster Artwork Container */}
                 <div className="relative rounded-3xl border-3 border-[#121217] bg-white p-3 fest-shadow-xl overflow-hidden rotate-1 hover:rotate-0 transition-transform duration-300">
                   <img
@@ -203,7 +203,7 @@ export default function HomePage() {
 
       {/* 3. EXPLORE THE EXPERIENCES (Technical, Cultural, Sports Cloud Cards) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <div className="text-center max-w-2xl mx-auto mb-12">
           <span className="text-xs font-black uppercase tracking-widest text-[#E91E63] block mb-2">
             THREE VIBRANT ARENAS
@@ -246,7 +246,7 @@ export default function HomePage() {
 
       {/* 4. FEATURED EVENTS SECTION */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-8">
           <div>
             <span className="text-xs font-black uppercase tracking-widest text-[#FF7A00] block mb-1">
@@ -263,11 +263,10 @@ export default function HomePage() {
               <button
                 key={cat}
                 onClick={() => setFeaturedCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-xl capitalize transition-all ${
-                  featuredCategory === cat
+                className={`px-3.5 py-1.5 rounded-xl capitalize transition-all ${featuredCategory === cat
                     ? 'bg-[#121217] text-white'
                     : 'text-stone-700 hover:text-black'
-                }`}
+                  }`}
               >
                 {cat}
               </button>
@@ -297,7 +296,7 @@ export default function HomePage() {
       {/* 5. FESTIVAL STALLS TEASER & INTERACTIVE PREVIEW */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-[#FFFDF9] border-3 border-[#121217] rounded-3xl p-6 sm:p-10 fest-shadow-lg relative overflow-hidden">
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-6 space-y-4">
               <span className="text-xs font-black uppercase bg-[#FF7A00] text-white px-3 py-1 rounded-full inline-block">
@@ -351,7 +350,7 @@ export default function HomePage() {
       {/* 6. LIVE SPORTS LEADERBOARD & DISCUSSION TEASER GRID */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          
+
           {/* Live Sports Ticker */}
           <div className="bg-white border-3 border-[#121217] rounded-3xl p-6 sm:p-8 fest-shadow flex flex-col">
             <div className="flex items-center justify-between mb-4 border-b pb-3">
@@ -498,18 +497,18 @@ export default function HomePage() {
 
       {/* 7. BE A PART OF COLORIDO '26 — TORN PAPER BANNER (Mirroring Poster) */}
       <section className="relative px-4 sm:px-6 lg:px-8">
-        
+
         {/* Torn paper top edge */}
         <div className="h-4 bg-[#FFD43B] torn-paper-top max-w-7xl mx-auto"></div>
 
         {/* Yellow Banner Body */}
         <div className="bg-[#FFD43B] max-w-7xl mx-auto px-6 sm:px-12 py-12 sm:py-16 border-x-3 border-[#121217] relative overflow-hidden">
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            
+
             {/* Left side: Call to Action & Hand-drawn arrow */}
             <div className="lg:col-span-7 space-y-6">
-              
+
               <span className="font-hand text-3xl sm:text-4xl text-stone-900 block -rotate-2">
                 Get your official festival passes today!
               </span>

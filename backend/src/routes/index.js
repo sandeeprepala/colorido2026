@@ -12,6 +12,7 @@ import * as discCtrl from '../controllers/discussionController.js';
 import * as certCtrl from '../controllers/certificatesController.js';
 import * as emailCtrl from '../controllers/emailController.js';
 import * as adminCtrl from '../controllers/adminController.js';
+import * as chatCtrl from '../controllers/chatController.js';
 
 const router = express.Router();
 
@@ -75,5 +76,9 @@ router.get('/email/inbox/my', requireAuth, emailCtrl.getMyInbox);
 
 // Admin dashboard overview
 router.get('/admin/stats', requireAdmin, adminCtrl.getAdminStats);
+
+// RAG Chatbot
+router.post('/chat', chatCtrl.handleChatMessage);
+router.post('/admin/chat/sync', requireAdmin, chatCtrl.reindexRag);
 
 export default router;

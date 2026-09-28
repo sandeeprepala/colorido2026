@@ -17,5 +17,9 @@ export const config = {
     smtpPass: process.env.SMTP_PASS || '',
     resendApiKey: process.env.RESEND_API_KEY || '',
   },
-  clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
+  clientUrl: process.env.CLIENT_URL || 'https://colorido2026-five.vercel.app',
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY || 'AIzaSyD-ALfshtHT1f_0uby_G9AI7gZII9c7TP8',
+    model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+  },
 };
