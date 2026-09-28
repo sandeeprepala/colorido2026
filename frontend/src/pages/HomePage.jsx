@@ -11,6 +11,7 @@ import { eventsAPI, leaderboardAPI, discussionAPI } from '../services/api';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { getOptimizedImageUrl } from '../utils/cloudinary';
+import PerspectiveGrid from '../components/common/PerspectiveGrid';
 
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
@@ -52,15 +53,18 @@ export default function HomePage() {
     <div className="space-y-20 sm:space-y-28">
 
       {/* 1. HERO SECTION (Inspired by the COLORIDO '26 Poster) */}
-      <section className="relative pt-6 sm:pt-12 pb-12 overflow-hidden">
+      <section className="relative pt-6 sm:pt-12 pb-12 overflow-hidden min-h-[580px] flex items-center">
+
+        {/* 3D Interactive Perspective Grid Animation Canvas */}
+        <PerspectiveGrid className="opacity-80" gridSize={32} fadeRadius={76} />
 
         {/* Subtle decorative background noise */}
-        <div className="absolute inset-0 bg-grain opacity-60 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-grain opacity-50 pointer-events-none z-10"></div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 pointer-events-none w-full">
 
           {/* Top Tagline Sticker & Category Badges */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6 sm:mb-8 pointer-events-auto">
             <div className="inline-flex items-center gap-2 bg-white border-2 border-[#121217] px-4 py-1.5 rounded-full fest-shadow-sm -rotate-1 hover:rotate-0 transition-transform">
               <span className="w-2.5 h-2.5 rounded-full bg-[#E91E63] animate-ping"></span>
               <span className="font-hand text-lg sm:text-xl text-[#121217]">
@@ -89,7 +93,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
 
             {/* Left Column: Oversized Experimental Typography */}
-            <div className="lg:col-span-7 space-y-6">
+            <div className="lg:col-span-7 space-y-6 pointer-events-auto">
 
               <div className="relative select-none">
 
@@ -149,7 +153,7 @@ export default function HomePage() {
             </div>
 
             {/* Right Column: Festival Collage Poster Artwork */}
-            <div className="lg:col-span-5 relative">
+            <div className="lg:col-span-5 relative pointer-events-auto">
               <div className="relative mx-auto max-w-md lg:max-w-none">
 
                 {/* Vintage Festival Poster Artwork Container */}
