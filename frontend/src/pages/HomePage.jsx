@@ -9,6 +9,7 @@ import CategoryCard from '../components/common/CategoryCard';
 import EventCard from '../components/common/EventCard';
 import { eventsAPI, leaderboardAPI, discussionAPI } from '../services/api';
 import { motion } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext';
 import { PerspectiveGrid } from '@/components/ui/perspective-grid';
 import { getOptimizedImageUrl, handleImageFallback } from '../utils/cloudinary';
 
@@ -92,7 +93,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
 
             {/* Left Column: Oversized Experimental Typography */}
-            <div className="lg:col-span-7 space-y-6 pointer-events-auto">
+            <div className="lg:col-span-7 space-y-6 pointer-events-none">
 
               <div className="relative select-none">
 
