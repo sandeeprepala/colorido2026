@@ -81,8 +81,6 @@ export default function AdminDashboard() {
   const [scoreText, setScoreText] = useState('');
   const [pointsVal, setPointsVal] = useState(0);
   const [editingScoreEntry, setEditingScoreEntry] = useState(null); // { id, points, score }
-  const [showNewMatchModal, setShowNewMatchModal] = useState(false);
-  const [newMatchData, setNewMatchData] = useState({ sport_name: '', match_info: '', status: 'UPCOMING' });
 
   // Certificate generation state
   const [certTargetEvent, setCertTargetEvent] = useState('');
@@ -124,9 +122,21 @@ export default function AdminDashboard() {
       setEmailLogs(emailsRes.data.logs || []);
       setDiscussions(discRes.data.messages || []);
 
-      if (lbRes.data.leaderboards?.length > 0 && !selectedLeaderboard) {
-        setSelectedLeaderboard(lbRes.data.leaderboards[0]);
+      const fetchedLbs = lbRes.data.leaderboards || [];
+      setLeaderboards(fetchedLbs);
+      if (fetchedLbs.length > 0) {
+        if (!selectedLeaderboard) {
+          setSelectedLeaderboard(fetchedLbs[0]);
+        } else {
+          const fresh = fetchedLbs.find((b) => b.id === selectedLeaderboard.id);
+          if (fresh) {
+            setSelectedLeaderboard(fresh);
+          } else {
+            setSelectedLeaderboard(fetchedLbs[0]);
+          }
+        }
       }
+
       if (eventsRes.data.events?.length > 0 && !certTargetEvent) {
         setCertTargetEvent(eventsRes.data.events[0].id);
       }
@@ -156,9 +166,21 @@ export default function AdminDashboard() {
       stallsAPI.getAdminApplications().then((res) => setStallApps(res.data.applications || []));
     },
     LEADERBOARD_UPDATED: (updated) => {
-      setLeaderboards((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
+      setLeaderboards((prev) => {
+        const exists = prev.some((b) => b.id === updated.id);
+        if (exists) {
+          return prev.map((b) => (b.id === updated.id ? updated : b));
+        }
+        return [...prev, updated];
+      });
       if (selectedLeaderboard?.id === updated.id) {
         setSelectedLeaderboard(updated);
+      }
+    },
+    LEADERBOARD_DELETED: ({ id }) => {
+      setLeaderboards((prev) => prev.filter((b) => b.id !== id && b.event_id !== id));
+      if (selectedLeaderboard?.id === id || selectedLeaderboard?.event_id === id) {
+        setSelectedLeaderboard(null);
       }
     },
   });
@@ -169,11 +191,11 @@ export default function AdminDashboard() {
   };
 
   // 1. EVENT MANAGEMENT ACTIONS
-  const handleOpenCreateEvent = () => {
+  const handleOpenCreateEvent = (defaultCategory = 'technical') => {
     setEditingEvent(null);
     setEventFormData({
       name: '',
-      category: 'technical',
+      category: defaultCategory,
       description: '',
       image_url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1000&q=80',
       venue: '',
@@ -261,7 +283,18 @@ export default function AdminDashboard() {
         notify(`New event "${eventFormData.name}" created!`);
       }
       setShowEventModal(false);
-      fetchAllAdminData();
+      await fetchAllAdminData();
+
+      // If a sports event was created or updated, auto-select it in the Sports Leaderboard
+      if (eventFormData.category?.toLowerCase() === 'sports') {
+        const lbRes = await leaderboardAPI.getAllLeaderboards();
+        const matched = lbRes.data.leaderboards?.find(
+          (lb) => lb.sport_name?.toLowerCase() === eventFormData.name?.toLowerCase()
+        );
+        if (matched) {
+          setSelectedLeaderboard(matched);
+        }
+      }
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to save event');
     }
@@ -308,24 +341,6 @@ export default function AdminDashboard() {
       fetchAllAdminData();
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to update registration status');
-    }
-  };
-
-  // 4. LEADERBOARD NEW MATCH ACTION
-  const handleCreateNewMatch = async (e) => {
-    e.preventDefault();
-    if (!newMatchData.sport_name) return;
-    try {
-      const res = await leaderboardAPI.createLeaderboard(newMatchData);
-      notify(`Match "${newMatchData.sport_name}" created & broadcast!`);
-      setShowNewMatchModal(false);
-      setNewMatchData({ sport_name: '', match_info: '', status: 'UPCOMING' });
-      fetchAllAdminData();
-      if (res.data.leaderboard) {
-        setSelectedLeaderboard(res.data.leaderboard);
-      }
-    } catch (err) {
-      alert(err.response?.data?.error || 'Failed to create match');
     }
   };
 
@@ -1152,11 +1167,12 @@ export default function AdminDashboard() {
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setShowNewMatchModal(true)}
-                className="bg-[#121217] hover:bg-[#8E44FF] text-white px-3.5 py-1.5 rounded-full text-xs font-black border-2 border-[#121217] fest-shadow-sm flex items-center gap-1 transition-all"
+                onClick={() => handleOpenCreateEvent('sports')}
+                className="bg-[#121217] hover:bg-[#16A34A] text-white px-3.5 py-1.5 rounded-full text-xs font-black border-2 border-[#121217] fest-shadow-sm flex items-center gap-1 transition-all cursor-pointer"
+                title="Create a new Sports event (automatically generates a leaderboard)"
               >
                 <Plus className="w-3.5 h-3.5" />
-                NEW MATCH
+                CREATE SPORTS EVENT
               </button>
               {['LIVE', 'UPCOMING', 'COMPLETED'].map((st) => (
                 <button
@@ -2023,79 +2039,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Create New Match Modal */}
-      {showNewMatchModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="relative w-full max-w-md bg-white rounded-3xl border-3 border-[#121217] fest-shadow-xl p-6 sm:p-8">
-            <h2 className="font-display font-black text-2xl text-[#121217] mb-2">
-              Create Live Match / Contest
-            </h2>
-            <p className="text-xs text-stone-500 font-semibold mb-4">
-              Launch a new sports bracket, e-sports lobby, or hackathon scoreboard.
-            </p>
 
-            <form onSubmit={handleCreateNewMatch} className="space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase text-stone-700 mb-1">
-                  Sport / Competition Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Futsal Thunder (Finals)"
-                  value={newMatchData.sport_name}
-                  onChange={(e) => setNewMatchData({ ...newMatchData, sport_name: e.target.value })}
-                  className="w-full px-3 py-2 bg-stone-50 border-2 border-[#121217] rounded-xl text-xs font-bold"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase text-stone-700 mb-1">
-                  Match Info / Pitch Location
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Turf Arena A · 3:00 PM · Championship Clash"
-                  value={newMatchData.match_info}
-                  onChange={(e) => setNewMatchData({ ...newMatchData, match_info: e.target.value })}
-                  className="w-full px-3 py-2 bg-stone-50 border-2 border-[#121217] rounded-xl text-xs font-semibold"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase text-stone-700 mb-1">
-                  Initial Status
-                </label>
-                <select
-                  value={newMatchData.status}
-                  onChange={(e) => setNewMatchData({ ...newMatchData, status: e.target.value })}
-                  className="w-full px-3 py-2 bg-stone-50 border-2 border-[#121217] rounded-xl text-xs font-bold"
-                >
-                  <option value="UPCOMING">UPCOMING</option>
-                  <option value="LIVE">LIVE NOW</option>
-                  <option value="COMPLETED">COMPLETED</option>
-                </select>
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowNewMatchModal(false)}
-                  className="px-4 py-2 rounded-full border border-stone-300 text-stone-700 text-xs font-bold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-[#121217] hover:bg-[#16A34A] text-white px-5 py-2 rounded-full font-black text-xs border border-[#121217] fest-shadow-sm transition-all"
-                >
-                  Create &amp; Broadcast
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Certificate Preview Modal */}
       {previewCert && (

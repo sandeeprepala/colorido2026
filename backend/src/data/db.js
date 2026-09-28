@@ -106,7 +106,44 @@ export const syncFromPostgres = async () => {
     state.stallApplications = appsRes.rows;
     state.emailLogs = emailsRes.rows;
 
-    console.log(`[Database] Synced from PostgreSQL: ${state.events.length} events, ${state.stalls.length} stalls, ${state.profiles.length} profiles.`);
+    // Automatically ensure all sports events have an active leaderboard
+    const sportsEvents = state.events.filter((e) => (e.category || '').toLowerCase() === 'sports');
+    for (const ev of sportsEvents) {
+      const existing = state.leaderboards.find(
+        (lb) => lb.event_id === ev.id || lb.sport_name?.toLowerCase() === ev.name?.toLowerCase()
+      );
+      if (!existing) {
+        const newLb = {
+          id: 'lb-' + ev.id.replace(/^evt-/, ''),
+          event_id: ev.id,
+          sport_name: ev.name,
+          status: 'UPCOMING',
+          match_info: `${ev.venue || 'Sports Arena'} • Starts at ${ev.start_time || '10:00 AM'}`,
+          entries: [],
+          updated_at: new Date().toISOString(),
+        };
+        state.leaderboards.push(newLb);
+        try {
+          await pool.query(`
+            INSERT INTO leaderboards (id, event_id, sport_name, status, match_info, entries, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, NOW())
+            ON CONFLICT (id) DO NOTHING
+          `, [
+            newLb.id, newLb.event_id, newLb.sport_name, newLb.status,
+            newLb.match_info, JSON.stringify(newLb.entries),
+          ]);
+        } catch (e) {
+          console.error('[Database] Error auto-seeding sports leaderboard in PG:', e.message);
+        }
+      } else if (!existing.event_id) {
+        existing.event_id = ev.id;
+        try {
+          await pool.query('UPDATE leaderboards SET event_id = $2 WHERE id = $1', [existing.id, ev.id]);
+        } catch (e) {}
+      }
+    }
+
+    console.log(`[Database] Synced from PostgreSQL: ${state.events.length} events, ${state.leaderboards.length} leaderboards, ${state.stalls.length} stalls, ${state.profiles.length} profiles.`);
   } catch (err) {
     console.error('[Database] Failed to sync from PostgreSQL:', err.message);
   }
@@ -271,6 +308,8 @@ export const db = {
     } catch (e) {
       console.error('[Database] Error deleting event from PG:', e.message);
     }
+    // Also remove any linked leaderboard
+    await db.deleteLeaderboard(id);
     return true;
   },
 
@@ -440,8 +479,39 @@ export const db = {
   },
 
   // Leaderboards
-  getAllLeaderboards: () => state.leaderboards,
+  getAllLeaderboards: () => {
+    const sportsEvents = state.events.filter((e) => (e.category || '').toLowerCase() === 'sports');
+    for (const ev of sportsEvents) {
+      const existing = state.leaderboards.find(
+        (lb) => lb.event_id === ev.id || lb.sport_name?.toLowerCase() === ev.name?.toLowerCase()
+      );
+      if (!existing) {
+        const newLb = {
+          id: 'lb-' + ev.id.replace(/^evt-/, ''),
+          event_id: ev.id,
+          sport_name: ev.name,
+          status: 'UPCOMING',
+          match_info: `${ev.venue || 'Sports Complex'} • Starts at ${ev.start_time || '10:00 AM'}`,
+          entries: [],
+          updated_at: new Date().toISOString(),
+        };
+        state.leaderboards.push(newLb);
+      }
+    }
+    return state.leaderboards;
+  },
   getLeaderboardByEventId: (eventId) => state.leaderboards.find((lb) => lb.event_id === eventId || lb.id === eventId),
+  deleteLeaderboard: async (id) => {
+    const idx = state.leaderboards.findIndex((lb) => lb.id === id || lb.event_id === id);
+    if (idx === -1) return false;
+    const removed = state.leaderboards.splice(idx, 1)[0];
+    try {
+      await pool.query('DELETE FROM leaderboards WHERE id = $1 OR event_id = $2', [removed.id, id]);
+    } catch (e) {
+      console.error('[Database] Error deleting leaderboard from PG:', e.message);
+    }
+    return true;
+  },
   createLeaderboard: async (lbData) => {
     state.leaderboards.push(lbData);
     try {

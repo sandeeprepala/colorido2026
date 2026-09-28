@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../data/db.js';
+import { broadcastRealtime } from '../services/realtimeService.js';
 
 export const getEvents = async (req, res) => {
   try {
@@ -146,7 +147,23 @@ export const createEvent = async (req, res) => {
       updated_at: new Date().toISOString(),
     };
 
-    db.createEvent(newEvent);
+    await db.createEvent(newEvent);
+
+    // If it's a sports event, automatically create its corresponding sports leaderboard
+    if (newEvent.category.toLowerCase() === 'sports') {
+      const newLb = {
+        id: 'lb-' + newEvent.id.replace(/^evt-/, ''),
+        event_id: newEvent.id,
+        sport_name: newEvent.name,
+        status: 'UPCOMING',
+        match_info: `${newEvent.venue || 'Sports Complex'} • Starts at ${newEvent.start_time || '10:00 AM'}`,
+        entries: [],
+        updated_at: new Date().toISOString(),
+      };
+      await db.createLeaderboard(newLb);
+      broadcastRealtime('LEADERBOARD_UPDATED', newLb);
+    }
+
     return res.status(201).json({ message: 'Event created successfully!', event: newEvent });
   } catch (err) {
     console.error('createEvent error:', err);
@@ -161,6 +178,38 @@ export const updateEvent = async (req, res) => {
     if (!updated) {
       return res.status(404).json({ error: 'Event not found.' });
     }
+
+    if (updated.category?.toLowerCase() === 'sports') {
+      const allLbs = db.getAllLeaderboards();
+      let existingLb = allLbs.find((lb) => lb.event_id === id || lb.id === id);
+      if (!existingLb) {
+        existingLb = allLbs.find((lb) => lb.sport_name?.toLowerCase() === updated.name?.toLowerCase());
+      }
+
+      if (existingLb) {
+        existingLb.event_id = updated.id;
+        existingLb.sport_name = updated.name;
+        if (updated.venue || updated.start_time) {
+          existingLb.match_info = `${updated.venue || 'Sports Complex'} • Starts at ${updated.start_time || '10:00 AM'}`;
+        }
+        existingLb.updated_at = new Date().toISOString();
+        await db.updateLeaderboardStatus(existingLb.id, existingLb.status, existingLb.match_info);
+        broadcastRealtime('LEADERBOARD_UPDATED', existingLb);
+      } else {
+        const newLb = {
+          id: 'lb-' + updated.id.replace(/^evt-/, ''),
+          event_id: updated.id,
+          sport_name: updated.name,
+          status: 'UPCOMING',
+          match_info: `${updated.venue || 'Sports Complex'} • Starts at ${updated.start_time || '10:00 AM'}`,
+          entries: [],
+          updated_at: new Date().toISOString(),
+        };
+        await db.createLeaderboard(newLb);
+        broadcastRealtime('LEADERBOARD_UPDATED', newLb);
+      }
+    }
+
     return res.json({ message: 'Event updated successfully!', event: updated });
   } catch (err) {
     console.error('updateEvent error:', err);
@@ -175,6 +224,7 @@ export const deleteEvent = async (req, res) => {
     if (!success) {
       return res.status(404).json({ error: 'Event not found.' });
     }
+    broadcastRealtime('LEADERBOARD_DELETED', { id, event_id: id });
     return res.json({ message: 'Event cancelled/deleted successfully.' });
   } catch (err) {
     console.error('deleteEvent error:', err);
