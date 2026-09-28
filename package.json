@@ -1,0 +1,10 @@
+{
+  "name": "colorido-fest-2026",
+  "version": "1.0.0",
+  "private": true,
+  "description": "COLORIDO '26 College Festival Platform",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "start": "cd backend && npm start"
+  }
+}

@@ -14,7 +14,10 @@ export const useRealtime = (handlers = {}) => {
   useEffect(() => {
     let eventSource;
     try {
-      eventSource = new EventSource('/api/realtime/events');
+      const sseUrl = import.meta.env.VITE_API_URL 
+        ? `${import.meta.env.VITE_API_URL}/realtime/events` 
+        : '/api/realtime/events';
+      eventSource = new EventSource(sseUrl);
 
       eventSource.onmessage = (event) => {
         try {
