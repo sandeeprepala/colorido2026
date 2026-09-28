@@ -259,21 +259,6 @@ export default function HomePage() {
           </div>
 
           {/* Filter Pills */}
-<<<<<<< HEAD
-          <div className="flex items-center gap-1.5 bg-white p-1 rounded-2xl border-2 border-[#121217] fest-shadow-sm text-xs font-bold">
-            {['all', 'technical', 'cultural', 'sports'].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setFeaturedCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-xl capitalize transition-all ${featuredCategory === cat
-                    ? 'bg-[#121217] text-white'
-                    : 'text-stone-700 hover:text-black'
-                  }`}
-              >
-                {cat}
-              </button>
-            ))}
-=======
           <div className="flex items-center gap-1.5 bg-white p-1 rounded-2xl border-2 border-[#121217] fest-shadow-sm text-xs font-bold relative">
             {['all', 'technical', 'cultural', 'sports'].map((cat) => {
               const isSelected = featuredCategory === cat;
@@ -296,7 +281,6 @@ export default function HomePage() {
                 </button>
               );
             })}
->>>>>>> e6e81c52e9fe924d8f901133bc6ec437ea4f9492
           </div>
         </div>
 
