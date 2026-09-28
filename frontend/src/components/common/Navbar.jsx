@@ -5,6 +5,7 @@ import {
   Menu, X, Sparkles, User, LogOut, ShieldCheck, Ticket, 
   ChevronDown
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Navbar() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -13,7 +14,7 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const navLinks = [
+  const allNavLinks = [
     { name: 'Home', path: '/' },
     { name: 'Events', path: '/events' },
     { name: 'Stalls', path: '/stalls' },
@@ -23,6 +24,13 @@ export default function Navbar() {
     { name: 'Gallery', path: '/gallery' },
     { name: 'About', path: '/about' },
   ];
+
+  const isAdminSession = isAdmin || user?.role === 'admin' || location.pathname.startsWith('/admin');
+  const hiddenOnAdmin = ['Events', 'Stalls', 'Schedule', 'Leaderboard', 'Discussion'];
+
+  const navLinks = isAdminSession
+    ? allNavLinks.filter((link) => !hiddenOnAdmin.includes(link.name))
+    : allNavLinks;
 
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/';
@@ -51,34 +59,53 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-all ${
-                  isActive(link.path)
-                    ? 'bg-[#121217] text-white shadow-sm'
-                    : 'text-[#121217] hover:bg-stone-200/70 hover:text-black'
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
+          {/* Desktop Nav Links with Sliding Pill Transition */}
+          <nav className="relative hidden lg:inline-flex items-center gap-1 p-1 rounded-full bg-stone-200/50 border border-stone-300/80">
+            {navLinks.map((link) => {
+              const active = isActive(link.path);
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`relative ${
+                    navLinks.length <= 5 ? 'px-5 py-2 text-sm' : 'px-3.5 py-1.5 text-xs xl:text-sm'
+                  } rounded-full font-black transition-colors duration-200 z-10 select-none flex items-center justify-center cursor-pointer`}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="navbar-sliding-pill"
+                      className="absolute inset-0 bg-[#121217] rounded-full -z-10 shadow-sm"
+                      transition={{
+                        type: 'spring',
+                        stiffness: 420,
+                        damping: 30,
+                        mass: 0.8,
+                      }}
+                    />
+                  )}
+                  <span
+                    className={`relative z-10 transition-colors duration-200 ${
+                      active ? 'text-white' : 'text-stone-700 hover:text-black'
+                    }`}
+                  >
+                    {link.name}
+                  </span>
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Right Section / Auth Controls */}
-          <div className="hidden md:flex items-center gap-2.5">
+          <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 {isAdmin && (
                   <Link
                     to="/admin"
-                    className="bg-[#8E44FF] hover:bg-[#7b35e2] text-white px-3.5 py-1.5 rounded-full font-black text-xs sm:text-sm border-2 border-[#121217] fest-shadow-sm flex items-center gap-1.5 transition-all hover:translate-x-0.5 hover:translate-y-0.5"
+                    className="bg-[#8E44FF] hover:bg-[#7b35e2] text-white px-4 py-2 rounded-full font-black text-xs sm:text-sm border-2 border-[#121217] fest-shadow-sm flex items-center gap-1.5 transition-all hover:translate-x-0.5 hover:translate-y-0.5"
                   >
                     <ShieldCheck className="w-4 h-4" />
-                    👑 Admin Portal
+                    Dashboard
                   </Link>
                 )}
 
@@ -110,25 +137,16 @@ export default function Navbar() {
                     </div>
 
                     <div className="py-1">
-                      {isAdmin && (
+                      {!isAdmin && (
                         <Link
-                          to="/admin"
+                          to="/my-festival"
                           onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-3 py-2 text-sm font-bold text-[#8E44FF] hover:bg-purple-50 rounded-xl transition-colors"
+                          className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 rounded-xl transition-colors"
                         >
-                          <ShieldCheck className="w-4 h-4" />
-                          Admin Dashboard
+                          <Ticket className="w-4 h-4 text-[#E91E63]" />
+                          My Festival &amp; QR Pass
                         </Link>
                       )}
-
-                      <Link
-                        to="/my-festival"
-                        onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 rounded-xl transition-colors"
-                      >
-                        <Ticket className="w-4 h-4 text-[#E91E63]" />
-                        My Festival &amp; QR Pass
-                      </Link>
 
                       <Link
                         to="/profile"
@@ -217,18 +235,21 @@ export default function Navbar() {
                   <Link
                     to="/admin"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block w-full text-center py-2.5 rounded-xl font-black bg-[#8E44FF] text-white border-2 border-[#121217] fest-shadow-sm"
+                    className="block w-full text-center py-2.5 rounded-xl font-black bg-[#8E44FF] text-white border-2 border-[#121217] fest-shadow-sm flex items-center justify-center gap-1.5"
                   >
-                    👑 Admin Dashboard
+                    <ShieldCheck className="w-4 h-4" />
+                    Dashboard
                   </Link>
                 )}
-                <Link
-                  to="/my-festival"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block w-full text-center py-2.5 rounded-xl font-black bg-[#19CFE8] text-[#121217] border-2 border-[#121217] fest-shadow-sm"
-                >
-                  🎟️ My Festival &amp; QR Pass
-                </Link>
+                {!isAdmin && (
+                  <Link
+                    to="/my-festival"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block w-full text-center py-2.5 rounded-xl font-black bg-[#19CFE8] text-[#121217] border-2 border-[#121217] fest-shadow-sm"
+                  >
+                    🎟️ My Festival &amp; QR Pass
+                  </Link>
+                )}
                 <button
                   onClick={() => {
                     logout();

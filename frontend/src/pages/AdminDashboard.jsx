@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ShieldCheck, Users, Calendar, Ticket, Store, Trophy, Mail, 
   Award, MessageSquare, Plus, Trash2, Edit3, CheckCircle2, 
-  XCircle, Download, Send, Search, RefreshCw, AlertCircle, Eye, ArrowUpRight
+  XCircle, Download, Send, Search, RefreshCw, AlertCircle, Eye, ArrowUpRight,
+  PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import { 
   adminAPI, eventsAPI, registrationsAPI, stallsAPI, 
@@ -13,12 +14,19 @@ import { useAuth } from '../contexts/AuthContext';
 import { useRealtime } from '../hooks/useRealtime';
 import StallMap from '../components/stalls/StallMap';
 import CertificateModal from '../components/common/CertificateModal';
+import FoodStreetBoulevard from '../components/stalls/admin/FoodStreetBoulevard';
+import CarnivalGameArena from '../components/stalls/admin/CarnivalGameArena';
+import StallApplicationsRegistry from '../components/stalls/admin/StallApplicationsRegistry';
+import FestivalStallLots from '../components/stalls/admin/FestivalStallLots';
+import StallAdminSidebar from '../components/stalls/admin/StallAdminSidebar';
 
 export default function AdminDashboard() {
   const { user, isAdmin, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('overview'); // overview, events, stalls, registrations, leaderboard, certificates, email, discussion
+  const [stallSection, setStallSection] = useState('food'); // food, game, applications, all-lots, view-all
+  const [isStallSidebarOpen, setIsStallSidebarOpen] = useState(true);
   const [stats, setStats] = useState(null);
   const [events, setEvents] = useState([]);
   const [stalls, setStalls] = useState([]);
@@ -856,145 +864,108 @@ export default function AdminDashboard() {
       {/* TAB 3: STALL MANAGEMENT */}
       {/* ======================================================== */}
       {activeTab === 'stalls' && (
-        <div className="space-y-8">
+        <div className="space-y-6">
           
-          <div>
-            <h2 className="font-display font-black text-2xl text-[#121217]">
-              ADMIN STALL MANAGEMENT
-            </h2>
-            <p className="text-xs font-semibold text-stone-500">
-              Interactive physical stall occupancy map and pending student applications
-            </p>
-          </div>
-
-          {/* Interactive Map for Admin */}
-          <StallMap
-            stalls={stalls}
-            selectedStall={null}
-            onSelectStall={() => {}}
-            onApplyClick={() => {}}
-            isAdmin={true}
-          />
-
-          {/* Stall Applications Table */}
-          <div className="bg-white border-2 border-[#121217] rounded-3xl p-6 fest-shadow space-y-4">
-            <h3 className="font-display font-black text-xl text-[#121217]">
-              Stall Applications Registry ({stallApps.length})
-            </h3>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="bg-stone-100 border-b-2 border-[#121217] font-black uppercase text-stone-600">
-                    <th className="py-3 px-4">Stall ID</th>
-                    <th className="py-3 px-4">Type</th>
-                    <th className="py-3 px-4">Applicant &amp; Phone</th>
-                    <th className="py-3 px-4">Product / Game Item</th>
-                    <th className="py-3 px-4">Price</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-200 font-semibold">
-                  {stallApps.map((app) => (
-                    <tr key={app.id} className="hover:bg-stone-50">
-                      <td className="py-3.5 px-4 font-black font-display text-sm text-[#121217]">
-                        {app.stall_id}
-                      </td>
-                      <td className="py-3.5 px-4 uppercase text-[10px] font-black">
-                        <span className={`px-2 py-0.5 rounded ${
-                          app.type === 'food' ? 'bg-orange-100 text-[#FF7A00]' : 'bg-purple-100 text-[#8E44FF]'
-                        }`}>
-                          {app.type}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <p className="font-bold text-[#121217]">{app.applicant_name}</p>
-                        <p className="text-stone-400 text-[11px]">{app.applicant_email} · {app.applicant_phone}</p>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <p className="font-bold text-stone-800">{app.item_name}</p>
-                        <p className="text-stone-500 text-[11px] line-clamp-1">{app.description}</p>
-                      </td>
-                      <td className="py-3.5 px-4 font-bold">{app.price}</td>
-                      <td className="py-3.5 px-4">
-                        <span className={`px-2.5 py-0.5 rounded-full font-black uppercase text-[10px] ${
-                          app.status === 'approved'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : app.status === 'rejected'
-                            ? 'bg-rose-100 text-rose-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {app.status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right space-x-1.5">
-                        {app.status === 'pending' && (
-                          <>
-                            <button
-                              onClick={() => handleReviewStall(app.id, 'approve')}
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg font-black text-xs"
-                            >
-                              ACCEPT
-                            </button>
-                            <button
-                              onClick={() => handleReviewStall(app.id, 'reject')}
-                              className="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded-lg font-black text-xs"
-                            >
-                              REJECT
-                            </button>
-                          </>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Quick Stall Status Override */}
-          <div className="bg-white border-2 border-[#121217] rounded-3xl p-6 fest-shadow space-y-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-stone-200 pb-3">
-              <div>
-                <h3 className="font-display font-black text-xl text-[#121217]">
-                  All Festival Stall Lots ({stalls.length})
-                </h3>
-                <p className="text-xs text-stone-500 font-semibold">
-                  Click any stall lot below to toggle occupancy status or reserve for university student clubs
-                </p>
-              </div>
+          {/* Header with Title and Sidebar Toggle */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="font-display font-black text-2xl text-[#121217]">
+                ADMIN STALL MANAGEMENT
+              </h2>
+              <p className="text-xs font-semibold text-stone-500">
+                Interactive physical stall occupancy map, student applications registry, and lot status overrides
+              </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-              {stalls.map((s) => (
-                <div
-                  key={s.stall_id}
-                  className={`p-3 rounded-2xl border-2 transition-all flex flex-col justify-between ${
-                    s.status === 'occupied'
-                      ? 'bg-rose-50 border-rose-300'
-                      : 'bg-emerald-50 border-emerald-300'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-black text-sm text-[#121217]">{s.stall_id}</span>
-                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                      s.status === 'occupied' ? 'bg-rose-200 text-rose-900' : 'bg-emerald-200 text-emerald-900'
-                    }`}>
-                      {s.status}
-                    </span>
-                  </div>
-                  <p className="text-[11px] font-bold text-stone-700 truncate mb-2">
-                    {s.item_name || s.name || (s.type === 'food' ? 'Food Stall' : 'Game Stall')}
-                  </p>
-                  <button
-                    onClick={() => handleToggleStallStatus(s.stall_id, s.status)}
-                    className="w-full text-[11px] font-black py-1.5 rounded-xl border border-[#121217] bg-white hover:bg-stone-100 transition-colors shadow-xs"
-                  >
-                    Set {s.status === 'occupied' ? 'Available' : 'Occupied'}
-                  </button>
+            <button
+              onClick={() => setIsStallSidebarOpen(!isStallSidebarOpen)}
+              className="bg-white hover:bg-stone-50 text-[#121217] px-4 py-2.5 rounded-2xl font-black text-xs border-2 border-[#121217] fest-shadow-sm flex items-center gap-2 cursor-pointer transition-all active:scale-95 shrink-0"
+              title={isStallSidebarOpen ? 'Collapse side navigation' : 'Expand side navigation'}
+            >
+              {isStallSidebarOpen ? (
+                <>
+                  <PanelLeftClose className="w-4 h-4 text-stone-600" />
+                  <span>Hide Sidebar</span>
+                </>
+              ) : (
+                <>
+                  <PanelLeftOpen className="w-4 h-4 text-[#FF7A00]" />
+                  <span>Show Sections Sidebar</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Main Layout: Side Navbar + Content View */}
+          <div className="flex flex-col lg:flex-row items-start gap-6">
+            
+            {/* Side Navbar (Collapsible) */}
+            <StallAdminSidebar
+              activeSection={stallSection}
+              setActiveSection={setStallSection}
+              isOpen={isStallSidebarOpen}
+              onToggle={() => setIsStallSidebarOpen(!isStallSidebarOpen)}
+              stalls={stalls}
+              stallApps={stallApps}
+            />
+
+            {/* Dynamic Stall Section Content */}
+            <div className="flex-1 min-w-0 w-full space-y-6">
+              
+              {/* 1. FOOD STREET BOULEVARD */}
+              {stallSection === 'food' && (
+                <FoodStreetBoulevard
+                  stalls={stalls}
+                  onToggleStatus={handleToggleStallStatus}
+                />
+              )}
+
+              {/* 2. CENTRAL CARNIVAL GAME ARENA */}
+              {stallSection === 'game' && (
+                <CarnivalGameArena
+                  stalls={stalls}
+                  onToggleStatus={handleToggleStallStatus}
+                />
+              )}
+
+              {/* 3. STALL APPLICATIONS REGISTRY */}
+              {stallSection === 'applications' && (
+                <StallApplicationsRegistry
+                  stallApps={stallApps}
+                  onReviewStall={handleReviewStall}
+                />
+              )}
+
+              {/* 4. ALL FESTIVAL STALL LOTS */}
+              {stallSection === 'all-lots' && (
+                <FestivalStallLots
+                  stalls={stalls}
+                  onToggleStatus={handleToggleStallStatus}
+                />
+              )}
+
+              {/* 5. VIEW ALL TOGETHER (OPTIONAL OVERVIEW) */}
+              {stallSection === 'view-all' && (
+                <div className="space-y-8">
+                  <FoodStreetBoulevard
+                    stalls={stalls}
+                    onToggleStatus={handleToggleStallStatus}
+                  />
+                  <CarnivalGameArena
+                    stalls={stalls}
+                    onToggleStatus={handleToggleStallStatus}
+                  />
+                  <StallApplicationsRegistry
+                    stallApps={stallApps}
+                    onReviewStall={handleReviewStall}
+                  />
+                  <FestivalStallLots
+                    stalls={stalls}
+                    onToggleStatus={handleToggleStallStatus}
+                  />
                 </div>
-              ))}
+              )}
+
             </div>
           </div>
 
