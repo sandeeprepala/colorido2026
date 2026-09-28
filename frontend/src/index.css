@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+@theme {
+  --color-festival-pink: #E91E63;
+  --color-festival-orange: #FF7A00;
+  --color-festival-yellow: #FFD43B;
+  --color-festival-cyan: #19CFE8;
+  --color-festival-green: #7ED957;
+  --color-festival-purple: #8E44FF;
+  --color-festival-dark: #121217;
+  --color-festival-cream: #FAF8F5;
+  --color-festival-cream-dark: #F3EFEA;
+  
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: Inter, system-ui, sans-serif;
+  --font-hand: Caveat, cursive, sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: #FAF8F5;
+    color: #121217;
+    font-family: var(--font-body);
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Custom COLORIDO '26 Festival Styles */
+.font-display {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+}
+
+.font-hand {
+  font-family: 'Caveat', cursive, sans-serif;
+}
+
+/* Brutalist / Festival Card Shadows */
+.fest-shadow {
+  box-shadow: 4px 4px 0px 0px #121217;
+}
+
+.fest-shadow-sm {
+  box-shadow: 2px 2px 0px 0px #121217;
+}
+
+.fest-shadow-lg {
+  box-shadow: 6px 6px 0px 0px #121217;
+}
+
+.fest-shadow-xl {
+  box-shadow: 8px 8px 0px 0px #121217;
+}
+
+.fest-shadow-pink {
+  box-shadow: 4px 4px 0px 0px #E91E63;
+}
+
+.fest-shadow-orange {
+  box-shadow: 4px 4px 0px 0px #FF7A00;
+}
+
+.fest-shadow-cyan {
+  box-shadow: 4px 4px 0px 0px #19CFE8;
+}
+
+.fest-shadow-purple {
+  box-shadow: 4px 4px 0px 0px #8E44FF;
+}
+
+.fest-shadow-yellow {
+  box-shadow: 4px 4px 0px 0px #FFD43B;
+}
+
+.fest-shadow-green {
+  box-shadow: 4px 4px 0px 0px #7ED957;
+}
+
+/* Hover micro-interactions */
+.fest-card-hover {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fest-card-hover:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 7px 7px 0px 0px #121217;
+}
+
+/* Torn paper edge effects */
+.torn-paper-top {
+  clip-path: polygon(
+    0% 12px, 3% 4px, 6% 14px, 9% 6px, 12% 16px, 15% 5px, 18% 13px, 21% 3px, 
+    24% 15px, 27% 6px, 30% 14px, 33% 4px, 36% 16px, 39% 7px, 42% 13px, 45% 3px,
+    48% 15px, 51% 6px, 54% 14px, 57% 4px, 60% 16px, 63% 5px, 66% 13px, 69% 3px,
+    72% 15px, 75% 6px, 78% 14px, 81% 4px, 84% 16px, 87% 7px, 90% 13px, 93% 3px,
+    96% 15px, 98% 5px, 100% 12px, 100% 100%, 0% 100%
+  );
+}
+
+.torn-paper-bottom {
+  clip-path: polygon(
+    0% 0%, 100% 0%, 100% calc(100% - 12px), 97% calc(100% - 4px), 94% calc(100% - 14px),
+    91% calc(100% - 6px), 88% calc(100% - 16px), 85% calc(100% - 5px), 82% calc(100% - 13px),
+    79% calc(100% - 3px), 76% calc(100% - 15px), 73% calc(100% - 6px), 70% calc(100% - 14px),
+    67% calc(100% - 4px), 64% calc(100% - 16px), 61% calc(100% - 7px), 58% calc(100% - 13px),
+    55% calc(100% - 3px), 52% calc(100% - 15px), 49% calc(100% - 6px), 46% calc(100% - 14px),
+    43% calc(100% - 4px), 40% calc(100% - 16px), 37% calc(100% - 5px), 34% calc(100% - 13px),
+    31% calc(100% - 3px), 28% calc(100% - 15px), 25% calc(100% - 6px), 22% calc(100% - 14px),
+    19% calc(100% - 4px), 16% calc(100% - 16px), 13% calc(100% - 7px), 10% calc(100% - 13px),
+    7% calc(100% - 3px), 4% calc(100% - 15px), 1% calc(100% - 5px), 0% calc(100% - 12px)
+  );
+}
+
+.bg-grain {
+  background-image: radial-gradient(rgba(18, 18, 23, 0.05) 1px, transparent 0);
+  background-size: 20px 20px;
+}
