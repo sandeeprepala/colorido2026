@@ -159,7 +159,11 @@ export default function StallMap({ stalls = [], selectedStall, onSelectStall, on
                     {/* Stall Title / Item */}
                     <div className="min-h-[38px]">
                       <p className="font-bold text-xs sm:text-sm text-stone-900 line-clamp-1">
-                        {stall.item_name || stall.name || 'Available Lot'}
+                        {stall.status === 'occupied'
+                          ? (stall.item_name || stall.name || 'Occupied Lot')
+                          : stall.status === 'pending'
+                          ? 'Under Review'
+                          : 'Available Lot'}
                       </p>
                       <p className="text-[11px] font-semibold text-stone-600 line-clamp-1">
                         {stall.status === 'occupied'
@@ -244,7 +248,11 @@ export default function StallMap({ stalls = [], selectedStall, onSelectStall, on
                     {/* Stall Title / Item */}
                     <div className="min-h-[38px]">
                       <p className="font-bold text-xs sm:text-sm text-stone-900 line-clamp-1">
-                        {stall.item_name || stall.name || 'Available Lot'}
+                        {stall.status === 'occupied'
+                          ? (stall.item_name || stall.name || 'Occupied Lot')
+                          : stall.status === 'pending'
+                          ? 'Under Review'
+                          : 'Available Lot'}
                       </p>
                       <p className="text-[11px] font-semibold text-stone-600 line-clamp-1">
                         {stall.status === 'occupied'

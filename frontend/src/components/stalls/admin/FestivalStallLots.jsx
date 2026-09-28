@@ -120,10 +120,14 @@ export default function FestivalStallLots({ stalls = [], onToggleStatus }) {
                 </span>
               </div>
               <p className="text-[11px] font-bold text-stone-700 truncate mb-1">
-                {s.item_name || s.name || (s.type === 'food' ? 'Food Stall' : 'Game Stall')}
+                {s.status === 'occupied'
+                  ? (s.item_name || s.name || (s.type === 'food' ? 'Food Stall' : 'Game Stall'))
+                  : s.status === 'pending'
+                  ? 'Under Review'
+                  : 'Available Lot'}
               </p>
               <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider mb-3">
-                {s.type === 'food' ? '🍔 Food' : '🎯 Game'} · {s.applicant_name || 'Unassigned'}
+                {s.type === 'food' ? '🍔 Food' : '🎯 Game'} · {s.status === 'occupied' ? (s.applicant_name || 'Assigned') : s.status === 'pending' ? 'Review Pending' : 'Ready to Book'}
               </p>
             </div>
 
