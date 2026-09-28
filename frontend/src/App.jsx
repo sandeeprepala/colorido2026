@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext';
 // Common Components
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
+import ScrollToTop from './components/common/ScrollToTop';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -28,6 +29,7 @@ export default function App() {
   return (
     <AuthProvider>
       <Router>
+        <ScrollToTop />
         <div className="min-h-screen flex flex-col bg-[#FAF8F5] text-[#121217]">
           <Navbar />
           

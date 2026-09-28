@@ -10,10 +10,12 @@ export default function DiscussionPage() {
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
-  const messagesEndRef = useRef(null);
+  const chatStreamRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatStreamRef.current) {
+      chatStreamRef.current.scrollTop = chatStreamRef.current.scrollHeight;
+    }
   };
 
   const fetchMessages = async () => {
@@ -111,7 +113,7 @@ export default function DiscussionPage() {
         </div>
 
         {/* Message Stream */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-stone-50/50">
+        <div ref={chatStreamRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-stone-50/50">
           {loading ? (
             <div className="text-center py-20 text-stone-400 text-xs font-bold">
               Loading community chat...
@@ -174,7 +176,6 @@ export default function DiscussionPage() {
               );
             })
           )}
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Chat Input Bar */}
