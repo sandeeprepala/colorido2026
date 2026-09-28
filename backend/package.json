@@ -6,11 +6,13 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "upload:cloudinary": "node src/scripts/uploadToCloudinary.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
     "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.11.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",

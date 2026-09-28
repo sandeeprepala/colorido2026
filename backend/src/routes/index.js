@@ -81,4 +81,11 @@ router.get('/admin/stats', requireAdmin, adminCtrl.getAdminStats);
 router.post('/chat', chatCtrl.handleChatMessage);
 router.post('/admin/chat/sync', requireAdmin, chatCtrl.reindexRag);
 
+// Cloudinary Public Config (exposes cloud name for CDN delivery)
+router.get('/config/cloudinary', (req, res) => {
+  res.json({
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
+  });
+});
+
 export default router;
