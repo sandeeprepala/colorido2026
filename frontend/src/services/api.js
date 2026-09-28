@@ -104,4 +104,8 @@ export const chatAPI = {
   sendMessage: (message, history = []) => api.post('/chat', { message, history }),
 };
 
+export const cloudinaryAPI = {
+  getConfig: () => api.get('/config/cloudinary'),
+};
+
 export default api;

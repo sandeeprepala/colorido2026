@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { cloudinaryAPI } from './services/api';
+import { setCloudinaryCloudName } from './utils/cloudinary';
 
 // Common Components
 import Navbar from './components/common/Navbar';
@@ -27,6 +29,16 @@ import VerifyRegistrationPage from './pages/VerifyRegistrationPage';
 import VerifyCertificatePage from './pages/VerifyCertificatePage';
 
 export default function App() {
+  useEffect(() => {
+    cloudinaryAPI.getConfig()
+      .then((res) => {
+        if (res.data?.cloudName) {
+          setCloudinaryCloudName(res.data.cloudName);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <AuthProvider>
       <Router>
