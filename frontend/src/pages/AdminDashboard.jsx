@@ -188,10 +188,14 @@ export default function AdminDashboard() {
 
   // 1. EVENT MANAGEMENT ACTIONS
   const handleOpenCreateEvent = (defaultCategory = 'technical') => {
+    const safeCategory = typeof defaultCategory === 'string' && ['technical', 'cultural', 'sports'].includes(defaultCategory.toLowerCase())
+      ? defaultCategory.toLowerCase()
+      : 'technical';
+
     setEditingEvent(null);
     setEventFormData({
       name: '',
-      category: defaultCategory,
+      category: safeCategory,
       description: '',
       image_url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1000&q=80',
       venue: '',
@@ -271,21 +275,30 @@ export default function AdminDashboard() {
   const handleSaveEvent = async (e) => {
     e.preventDefault();
     try {
+      const cleanCategory = typeof eventFormData.category === 'string' && ['technical', 'cultural', 'sports'].includes(eventFormData.category.toLowerCase())
+        ? eventFormData.category.toLowerCase()
+        : 'technical';
+
+      const payload = {
+        ...eventFormData,
+        category: cleanCategory,
+      };
+
       if (editingEvent) {
-        await eventsAPI.updateEvent(editingEvent.id, eventFormData);
-        notify(`Event "${eventFormData.name}" updated successfully!`);
+        await eventsAPI.updateEvent(editingEvent.id, payload);
+        notify(`Event "${payload.name}" updated successfully!`);
       } else {
-        await eventsAPI.createEvent(eventFormData);
-        notify(`New event "${eventFormData.name}" created!`);
+        await eventsAPI.createEvent(payload);
+        notify(`New event "${payload.name}" created!`);
       }
       setShowEventModal(false);
       fetchAllAdminData();
 
       // If a sports event was created or updated, auto-select it in the Sports Leaderboard
-      if (eventFormData.category?.toLowerCase() === 'sports') {
+      if (cleanCategory === 'sports') {
         leaderboardAPI.getAllLeaderboards().then((lbRes) => {
           const matched = lbRes.data.leaderboards?.find(
-            (lb) => lb.sport_name?.toLowerCase() === eventFormData.name?.toLowerCase()
+            (lb) => lb.sport_name?.toLowerCase() === payload.name?.toLowerCase()
           );
           if (matched) {
             setSelectedLeaderboard(matched);
@@ -514,7 +527,7 @@ export default function AdminDashboard() {
         {/* Global Quick Action Buttons */}
         <div className="flex flex-wrap items-center gap-2.5">
           <button
-            onClick={handleOpenCreateEvent}
+            onClick={() => handleOpenCreateEvent('technical')}
             className="bg-[#121217] hover:bg-[#E91E63] text-white px-4 py-2.5 rounded-full text-xs font-black border-2 border-[#121217] fest-shadow-sm flex items-center gap-1.5 transition-all"
           >
             <Plus className="w-4 h-4" />
@@ -756,7 +769,7 @@ export default function AdminDashboard() {
               FESTIVAL EVENTS INVENTORY ({events.length})
             </h2>
             <button
-              onClick={handleOpenCreateEvent}
+              onClick={() => handleOpenCreateEvent('technical')}
               className="bg-[#121217] hover:bg-[#E91E63] text-white px-4 py-2 rounded-full font-black text-xs flex items-center gap-1.5"
             >
               <Plus className="w-4 h-4" /> Add New Event
