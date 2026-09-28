@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import { Utensils, Gamepad2, CheckCircle2, Clock, Ban, Info, Sparkles, MapPin } from 'lucide-react';
 
-export default function StallMap({ stalls = [], selectedStall, onSelectStall, onApplyClick, isAdmin = false }) {
-  const [filterType, setFilterType] = useState('all');
+export default function StallMap({ stalls = [], selectedStall, onSelectStall, onApplyClick, isAdmin = false, defaultFilter = 'all' }) {
+  const [filterType, setFilterType] = useState(defaultFilter);
+
+  React.useEffect(() => {
+    if (defaultFilter) {
+      setFilterType(defaultFilter);
+    }
+  }, [defaultFilter]);
 
   const foodStalls = stalls.filter((s) => s.type === 'food');
   const gameStalls = stalls.filter((s) => s.type === 'game');
