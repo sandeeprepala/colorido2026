@@ -14,7 +14,7 @@ import { PerspectiveGrid } from '@/components/ui/perspective-grid';
 import { getOptimizedImageUrl, handleImageFallback } from '../utils/cloudinary';
 
 export default function HomePage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const [events, setEvents] = useState([]);
   const [featuredCategory, setFeaturedCategory] = useState('all');
   const [liveLeaderboard, setLiveLeaderboard] = useState(null);
@@ -133,14 +133,25 @@ export default function HomePage() {
 
               {/* CTAs */}
               <div className="flex flex-wrap items-center gap-4 pt-3 pointer-events-auto">
-                <Link
-                  to={isAuthenticated ? '/events' : '/register'}
-                  className="bg-[#121217] hover:bg-[#E91E63] text-white px-8 py-4 rounded-full font-black text-sm sm:text-base border-2 border-[#121217] fest-shadow-lg transition-all flex items-center gap-2 group"
-                >
-                  <Sparkles className="w-5 h-5 text-[#FFD43B] group-hover:rotate-12 transition-transform" />
-                  <span>REGISTER NOW</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
+                {!isAdmin ? (
+                  <Link
+                    to={isAuthenticated ? '/events' : '/register'}
+                    className="bg-[#121217] hover:bg-[#E91E63] text-white px-8 py-4 rounded-full font-black text-sm sm:text-base border-2 border-[#121217] fest-shadow-lg transition-all flex items-center gap-2 group"
+                  >
+                    <Sparkles className="w-5 h-5 text-[#FFD43B] group-hover:rotate-12 transition-transform" />
+                    <span>REGISTER NOW</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                ) : (
+                  <Link
+                    to="/admin"
+                    className="bg-[#8E44FF] hover:bg-[#7b35e2] text-white px-8 py-4 rounded-full font-black text-sm sm:text-base border-2 border-[#121217] fest-shadow-lg transition-all flex items-center gap-2 group"
+                  >
+                    <ShieldCheck className="w-5 h-5 text-[#FFD43B]" />
+                    <span>ADMIN DASHBOARD</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                )}
 
                 <Link
                   to="/events"
@@ -540,18 +551,31 @@ export default function HomePage() {
               </h2>
 
               <div className="flex items-center gap-6 pt-2">
-                <Link
-                  to={isAuthenticated ? '/events' : '/register'}
-                  className="bg-[#121217] hover:bg-[#E91E63] text-white px-8 py-4 rounded-full font-black text-base border-2 border-[#121217] fest-shadow-lg transition-all flex items-center gap-2 group"
-                >
-                  <span>Register Now</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
-                </Link>
+                {!isAdmin ? (
+                  <>
+                    <Link
+                      to={isAuthenticated ? '/events' : '/register'}
+                      className="bg-[#121217] hover:bg-[#E91E63] text-white px-8 py-4 rounded-full font-black text-base border-2 border-[#121217] fest-shadow-lg transition-all flex items-center gap-2 group"
+                    >
+                      <span>Register Now</span>
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
+                    </Link>
 
-                {/* Hand-drawn arrow indication matching poster */}
-                <div className="hidden sm:flex items-center gap-2 font-hand text-2xl font-bold text-stone-900 -rotate-6">
-                  <span>← Show this entry pass at venue</span>
-                </div>
+                    {/* Hand-drawn arrow indication matching poster */}
+                    <div className="hidden sm:flex items-center gap-2 font-hand text-2xl font-bold text-stone-900 -rotate-6">
+                      <span>← Show this entry pass at venue</span>
+                    </div>
+                  </>
+                ) : (
+                  <Link
+                    to="/admin"
+                    className="bg-[#121217] hover:bg-[#8E44FF] text-white px-8 py-4 rounded-full font-black text-base border-2 border-[#121217] fest-shadow-lg transition-all flex items-center gap-2 group"
+                  >
+                    <ShieldCheck className="w-5 h-5 text-[#19CFE8]" />
+                    <span>Go to Admin Dashboard</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
+                  </Link>
+                )}
               </div>
 
             </div>

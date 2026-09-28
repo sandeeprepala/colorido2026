@@ -26,6 +26,12 @@ export default function Navbar() {
     { name: 'About', path: '/about' },
   ];
 
+  // For Admin: remove Events, Stalls, Schedule, Leaderboard, Discussion
+  const adminExcludedPaths = ['/events', '/stalls', '/schedule', '/leaderboard', '/discussion'];
+  const navLinks = isAdmin
+    ? allNavLinks.filter((link) => !adminExcludedPaths.includes(link.path))
+    : allNavLinks;
+
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
@@ -37,7 +43,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-20">
           
           {/* Festival Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-2 group shrink-0">
             <div className="flex items-center tracking-tight font-display font-black text-2xl sm:text-3xl">
               <span className="text-[#E91E63] group-hover:-translate-y-0.5 transition-transform">C</span>
               <span className="text-[#FF7A00] group-hover:-translate-y-1 transition-transform">O</span>
@@ -54,65 +60,69 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav Links with Dynamic Sliding Capsule Animation */}
-          <nav
-            onMouseLeave={() => setHoveredPath(null)}
-            className="relative hidden lg:inline-flex items-center gap-0.5 xl:gap-1 p-1 rounded-full bg-stone-200/60 border border-stone-300/80 shadow-inner"
-          >
-            {allNavLinks.map((link) => {
-              const active = isActive(link.path);
-              const isHovered = hoveredPath === link.path;
-              return (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onMouseEnter={() => setHoveredPath(link.path)}
-                  className="relative isolate px-3 xl:px-4 py-1.5 text-xs xl:text-sm rounded-full font-black transition-colors duration-200 select-none flex items-center justify-center cursor-pointer"
-                >
-                  {/* Active sliding capsule */}
-                  {active && (
-                    <motion.span
-                      layoutId="navbar-active-capsule"
-                      className="absolute inset-0 bg-[#121217] rounded-full z-0 shadow-sm"
-                      transition={{
-                        type: 'spring',
-                        stiffness: 420,
-                        damping: 30,
-                        mass: 0.8,
-                      }}
-                    />
-                  )}
-
-                  {/* Hover floating capsule (when not already active) */}
-                  {isHovered && !active && (
-                    <motion.span
-                      layoutId="navbar-hover-capsule"
-                      className="absolute inset-0 bg-stone-300/70 rounded-full z-0"
-                      transition={{
-                        type: 'spring',
-                        stiffness: 450,
-                        damping: 32,
-                      }}
-                    />
-                  )}
-
-                  <span
-                    className={`relative z-10 transition-colors duration-200 ${
-                      active
-                        ? 'text-white'
-                        : isHovered
-                        ? 'text-[#121217]'
-                        : 'text-stone-700 hover:text-black'
-                    }`}
+          <div className="hidden lg:flex items-center justify-center flex-1 px-4">
+            <nav
+              onMouseLeave={() => setHoveredPath(null)}
+              className="relative inline-flex items-center gap-0.5 xl:gap-1 p-1 rounded-full bg-stone-200/60 border border-stone-300/80 shadow-inner"
+            >
+              {navLinks.map((link) => {
+                const active = isActive(link.path);
+                const isHovered = hoveredPath === link.path;
+                return (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onMouseEnter={() => setHoveredPath(link.path)}
+                    className={`relative isolate ${
+                      isAdmin ? 'px-5 py-2 text-sm' : 'px-3 xl:px-4 py-1.5 text-xs xl:text-sm'
+                    } rounded-full font-black transition-colors duration-200 select-none flex items-center justify-center cursor-pointer`}
                   >
-                    {link.name}
-                  </span>
-                </Link>
-              );
-            })}
-          </nav>
+                    {/* Active sliding capsule */}
+                    {active && (
+                      <motion.span
+                        layoutId="navbar-active-capsule"
+                        className="absolute inset-0 bg-[#121217] rounded-full z-0 shadow-sm"
+                        transition={{
+                          type: 'spring',
+                          stiffness: 420,
+                          damping: 30,
+                          mass: 0.8,
+                        }}
+                      />
+                    )}
+
+                    {/* Hover floating capsule (when not already active) */}
+                    {isHovered && !active && (
+                      <motion.span
+                        layoutId="navbar-hover-capsule"
+                        className="absolute inset-0 bg-stone-300/70 rounded-full z-0"
+                        transition={{
+                          type: 'spring',
+                          stiffness: 450,
+                          damping: 32,
+                        }}
+                      />
+                    )}
+
+                    <span
+                      className={`relative z-10 transition-colors duration-200 ${
+                        active
+                          ? 'text-white'
+                          : isHovered
+                          ? 'text-[#121217]'
+                          : 'text-stone-700 hover:text-black'
+                      }`}
+                    >
+                      {link.name}
+                    </span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
 
           {/* Right Section / Auth Controls */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3 shrink-0">
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
                 {isAdmin && (
@@ -169,7 +179,7 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t-2 border-[#121217] bg-[#FAF8F5] px-4 pt-3 pb-6 space-y-3">
           <div className="space-y-1">
-            {allNavLinks.map((link) => (
+            {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
