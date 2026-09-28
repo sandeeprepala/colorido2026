@@ -11,6 +11,7 @@ export default function Navbar() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [hoveredPath, setHoveredPath] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -24,13 +25,6 @@ export default function Navbar() {
     { name: 'Gallery', path: '/gallery' },
     { name: 'About', path: '/about' },
   ];
-
-  const isAdminSession = isAdmin || user?.role === 'admin' || location.pathname.startsWith('/admin');
-  const hiddenOnAdmin = ['Events', 'Stalls', 'Schedule', 'Leaderboard', 'Discussion'];
-
-  const navLinks = isAdminSession
-    ? allNavLinks.filter((link) => !hiddenOnAdmin.includes(link.name))
-    : allNavLinks;
 
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/';
@@ -59,21 +53,25 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop Nav Links with Sliding Pill Transition */}
-          <nav className="relative hidden lg:inline-flex items-center gap-1 p-1 rounded-full bg-stone-200/50 border border-stone-300/80">
-            {navLinks.map((link) => {
+          {/* Desktop Nav Links with Dynamic Sliding Capsule Animation */}
+          <nav
+            onMouseLeave={() => setHoveredPath(null)}
+            className="relative hidden lg:inline-flex items-center gap-0.5 xl:gap-1 p-1 rounded-full bg-stone-200/60 border border-stone-300/80 shadow-inner"
+          >
+            {allNavLinks.map((link) => {
               const active = isActive(link.path);
+              const isHovered = hoveredPath === link.path;
               return (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`relative ${
-                    navLinks.length <= 5 ? 'px-5 py-2 text-sm' : 'px-3.5 py-1.5 text-xs xl:text-sm'
-                  } rounded-full font-black transition-colors duration-200 z-10 select-none flex items-center justify-center cursor-pointer`}
+                  onMouseEnter={() => setHoveredPath(link.path)}
+                  className="relative px-3 xl:px-4 py-1.5 text-xs xl:text-sm rounded-full font-black transition-colors duration-200 z-10 select-none flex items-center justify-center cursor-pointer"
                 >
+                  {/* Active sliding capsule */}
                   {active && (
                     <motion.span
-                      layoutId="navbar-sliding-pill"
+                      layoutId="navbar-active-capsule"
                       className="absolute inset-0 bg-[#121217] rounded-full -z-10 shadow-sm"
                       transition={{
                         type: 'spring',
@@ -83,9 +81,27 @@ export default function Navbar() {
                       }}
                     />
                   )}
+
+                  {/* Hover floating capsule (when not already active) */}
+                  {isHovered && !active && (
+                    <motion.span
+                      layoutId="navbar-hover-capsule"
+                      className="absolute inset-0 bg-stone-300/70 rounded-full -z-10"
+                      transition={{
+                        type: 'spring',
+                        stiffness: 450,
+                        damping: 32,
+                      }}
+                    />
+                  )}
+
                   <span
                     className={`relative z-10 transition-colors duration-200 ${
-                      active ? 'text-white' : 'text-stone-700 hover:text-black'
+                      active
+                        ? 'text-white'
+                        : isHovered
+                        ? 'text-[#121217]'
+                        : 'text-stone-700 hover:text-black'
                     }`}
                   >
                     {link.name}
@@ -102,7 +118,11 @@ export default function Navbar() {
                 {isAdmin && (
                   <Link
                     to="/admin"
-                    className="bg-[#8E44FF] hover:bg-[#7b35e2] text-white px-4 py-2 rounded-full font-black text-xs sm:text-sm border-2 border-[#121217] fest-shadow-sm flex items-center gap-1.5 transition-all hover:translate-x-0.5 hover:translate-y-0.5"
+                    className={`px-4 py-2 rounded-full font-black text-xs sm:text-sm border-2 border-[#121217] fest-shadow-sm flex items-center gap-1.5 transition-all hover:translate-x-0.5 hover:translate-y-0.5 ${
+                      location.pathname.startsWith('/admin')
+                        ? 'bg-[#121217] text-white'
+                        : 'bg-[#8E44FF] hover:bg-[#7b35e2] text-white'
+                    }`}
                   >
                     <ShieldCheck className="w-4 h-4" />
                     Dashboard
@@ -212,14 +232,14 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t-2 border-[#121217] bg-[#FAF8F5] px-4 pt-3 pb-6 space-y-3">
           <div className="space-y-1">
-            {navLinks.map((link) => (
+            {allNavLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block px-4 py-2.5 rounded-xl font-bold text-base ${
+                className={`block px-4 py-2.5 rounded-xl font-bold text-base transition-colors ${
                   isActive(link.path)
-                    ? 'bg-[#121217] text-white'
+                    ? 'bg-[#121217] text-white shadow-sm'
                     : 'text-[#121217] hover:bg-stone-200'
                 }`}
               >
