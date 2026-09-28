@@ -1,17 +1,19 @@
 import pkg from 'pg';
 import bcrypt from 'bcryptjs';
+import { initialEvents, initialStalls, initialLeaderboards } from './seedData.js';
 
 const { Pool } = pkg;
 
 export const pool = new Pool({
-  host: process.env.PGHOST || 'db.athwlgfzwdvkuerototg.supabase.co',
+  host: process.env.PGHOST || 'aws-0-ap-southeast-1.pooler.supabase.com',
   port: Number(process.env.PGPORT) || 5432,
   database: process.env.PGDATABASE || 'postgres',
-  user: process.env.PGUSER || 'postgres',
+  user: process.env.PGUSER || 'postgres.athwlgfzwdvkuerototg',
   password: process.env.PGPASSWORD || 'colorido@2026',
   ssl: {
     rejectUnauthorized: false,
   },
+  connectionTimeoutMillis: 5000,
 });
 
 let state = {
@@ -41,9 +43,9 @@ let state = {
       created_at: '2026-01-01T00:00:00.000Z',
     },
   ],
-  events: [],
-  stalls: [],
-  leaderboards: [],
+  events: initialEvents || [],
+  stalls: initialStalls || [],
+  leaderboards: initialLeaderboards || [],
   discussion: [],
   registrations: [],
   certificates: [],
