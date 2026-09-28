@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Sparkles, Maximize2, X, ChevronLeft, ChevronRight, Download, Eye, Camera, Film, Layers } from 'lucide-react';
 
 export default function GalleryPage() {
@@ -148,23 +149,31 @@ export default function GalleryPage() {
       </div>
 
       {/* Filter Category Pills */}
-      <div className="flex flex-wrap items-center justify-center gap-2 bg-white p-2.5 rounded-2xl border-2 border-[#121217] fest-shadow-sm max-w-fit mx-auto">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => {
-              setActiveFilter(cat);
-              setActiveModalIdx(null);
-            }}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all ${
-              activeFilter === cat
-                ? 'bg-[#121217] text-white fest-shadow-sm'
-                : 'text-stone-700 hover:bg-stone-100'
-            }`}
-          >
-            {cat === 'All' ? '✨ All Photos (' + galleryItems.length + ')' : `${cat}`}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center justify-center gap-1.5 bg-white p-2 rounded-2xl border-2 border-[#121217] fest-shadow-sm max-w-fit mx-auto relative">
+        {categories.map((cat) => {
+          const isSelected = activeFilter === cat;
+          return (
+            <button
+              key={cat}
+              onClick={() => {
+                setActiveFilter(cat);
+                setActiveModalIdx(null);
+              }}
+              className="relative px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors cursor-pointer select-none"
+            >
+              {isSelected && (
+                <motion.span
+                  layoutId="gallery-category-capsule"
+                  className="absolute inset-0 bg-[#121217] rounded-xl -z-10 shadow-xs"
+                  transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                />
+              )}
+              <span className={`relative z-10 transition-colors ${isSelected ? 'text-white' : 'text-stone-700 hover:text-black'}`}>
+                {cat === 'All' ? '✨ All Photos (' + galleryItems.length + ')' : `${cat}`}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Gallery Grid */}

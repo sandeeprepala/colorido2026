@@ -10,6 +10,7 @@ import {
   adminAPI, eventsAPI, registrationsAPI, stallsAPI, 
   leaderboardAPI, certificatesAPI, emailAPI, discussionAPI 
 } from '../services/api';
+import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useRealtime } from '../hooks/useRealtime';
 import StallMap from '../components/stalls/StallMap';
@@ -25,6 +26,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('overview'); // overview, events, stalls, registrations, leaderboard, certificates, email, discussion
+  const [hoveredAdminTab, setHoveredAdminTab] = useState(null);
   const [stallSection, setStallSection] = useState('food'); // food, game, applications, all-lots, view-all
   const [isStallSidebarOpen, setIsStallSidebarOpen] = useState(true);
   const [stats, setStats] = useState(null);
@@ -559,7 +561,10 @@ export default function AdminDashboard() {
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex flex-wrap lg:flex-nowrap items-center gap-1.5 sm:gap-2 bg-white p-2 rounded-2xl border-2 border-[#121217] fest-shadow-sm text-xs font-black overflow-x-auto no-scrollbar">
+      <div
+        onMouseLeave={() => setHoveredAdminTab(null)}
+        className="flex flex-wrap lg:flex-nowrap items-center gap-1.5 sm:gap-2 bg-white p-2 rounded-2xl border-2 border-[#121217] fest-shadow-sm text-xs font-black overflow-x-auto no-scrollbar relative"
+      >
         {[
           { id: 'overview', label: '📊 Overview' },
           { id: 'events', label: `🎪 Events (${events.length})` },
@@ -569,19 +574,53 @@ export default function AdminDashboard() {
           { id: 'certificates', label: `📜 Certificates (${certificates.length})` },
           { id: 'email', label: '✉️ Email Broadcast' },
           { id: 'discussion', label: `💬 Discussion (${discussions.length})` },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl whitespace-nowrap transition-all flex-1 text-center shrink-0 ${
-              activeTab === tab.id
-                ? 'bg-[#121217] text-white fest-shadow-sm'
-                : 'text-stone-700 hover:bg-stone-100 hover:text-stone-900'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+        ].map((tab) => {
+          const isActive = activeTab === tab.id;
+          const isHovered = hoveredAdminTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              onMouseEnter={() => setHoveredAdminTab(tab.id)}
+              className="relative px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl whitespace-nowrap transition-colors flex-1 text-center shrink-0 cursor-pointer select-none"
+            >
+              {/* Active sliding capsule */}
+              {isActive && (
+                <motion.span
+                  layoutId="admin-active-tab-capsule"
+                  className="absolute inset-0 bg-[#121217] rounded-xl -z-10 fest-shadow-sm"
+                  transition={{
+                    type: 'spring',
+                    stiffness: 420,
+                    damping: 30,
+                    mass: 0.8,
+                  }}
+                />
+              )}
+
+              {/* Hover floating capsule */}
+              {isHovered && !isActive && (
+                <motion.span
+                  layoutId="admin-hover-tab-capsule"
+                  className="absolute inset-0 bg-stone-100 rounded-xl -z-10"
+                  transition={{
+                    type: 'spring',
+                    stiffness: 450,
+                    damping: 32,
+                  }}
+                />
+              )}
+
+              <span
+                className={`relative z-10 transition-colors duration-150 ${
+                  isActive ? 'text-white' : isHovered ? 'text-black' : 'text-stone-700'
+                }`}
+              >
+                {tab.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* ======================================================== */}
@@ -1029,21 +1068,29 @@ export default function AdminDashboard() {
             </div>
 
             {/* Status Filter Pills */}
-            <div className="flex items-center gap-2 pt-2 border-t border-stone-200">
+            <div className="flex items-center gap-1.5 pt-2 border-t border-stone-200">
               <span className="text-[11px] font-black uppercase text-stone-500 mr-1">Status:</span>
-              {['all', 'confirmed', 'attended', 'cancelled'].map((st) => (
-                <button
-                  key={st}
-                  onClick={() => setRegStatusFilter(st)}
-                  className={`px-3 py-1 rounded-full text-xs font-black capitalize transition-all ${
-                    regStatusFilter === st
-                      ? 'bg-[#121217] text-white'
-                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                  }`}
-                >
-                  {st}
-                </button>
-              ))}
+              {['all', 'confirmed', 'attended', 'cancelled'].map((st) => {
+                const isSelected = regStatusFilter === st;
+                return (
+                  <button
+                    key={st}
+                    onClick={() => setRegStatusFilter(st)}
+                    className="relative px-3.5 py-1 rounded-full text-xs font-black capitalize transition-colors cursor-pointer"
+                  >
+                    {isSelected && (
+                      <motion.span
+                        layoutId="admin-reg-status-capsule"
+                        className="absolute inset-0 bg-[#121217] rounded-full -z-10 fest-shadow-sm"
+                        transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                      />
+                    )}
+                    <span className={`relative z-10 transition-colors ${isSelected ? 'text-white' : 'text-stone-600 hover:text-black'}`}>
+                      {st}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -1154,38 +1201,54 @@ export default function AdminDashboard() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
-              {['LIVE', 'UPCOMING', 'COMPLETED'].map((st) => (
-                <button
-                  key={st}
-                  onClick={() => handleUpdateMatchStatus(st)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-black uppercase border-2 border-[#121217] transition-all cursor-pointer ${
-                    selectedLeaderboard?.status === st
-                      ? st === 'LIVE' ? 'bg-rose-500 text-white' : 'bg-[#121217] text-white'
-                      : 'bg-white text-stone-700 hover:bg-stone-100'
-                  }`}
-                >
-                  Set {st}
-                </button>
-              ))}
+            <div className="flex items-center gap-1.5 relative">
+              {['LIVE', 'UPCOMING', 'COMPLETED'].map((st) => {
+                const isSelected = selectedLeaderboard?.status === st;
+                return (
+                  <button
+                    key={st}
+                    onClick={() => handleUpdateMatchStatus(st)}
+                    className="relative px-3.5 py-1.5 rounded-full text-xs font-black uppercase border-2 border-[#121217] transition-colors cursor-pointer select-none"
+                  >
+                    {isSelected && (
+                      <motion.span
+                        layoutId="admin-match-status-capsule"
+                        className={`absolute inset-0 rounded-full -z-10 ${st === 'LIVE' ? 'bg-rose-500' : 'bg-[#121217]'}`}
+                        transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                      />
+                    )}
+                    <span className={`relative z-10 transition-colors ${isSelected ? 'text-white' : 'text-stone-700 hover:text-black'}`}>
+                      Set {st}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Sport Selector */}
           <div className="flex flex-wrap items-center gap-2">
-            {leaderboards.map((b) => (
-              <button
-                key={b.id}
-                onClick={() => setSelectedLeaderboard(b)}
-                className={`px-4 py-2 rounded-xl text-xs font-black border-2 transition-all ${
-                  selectedLeaderboard?.id === b.id
-                    ? 'bg-[#121217] text-white border-[#121217] fest-shadow-sm'
-                    : 'bg-white text-stone-800 border-stone-300'
-                }`}
-              >
-                {b.sport_name} ({b.status})
-              </button>
-            ))}
+            {leaderboards.map((b) => {
+              const isSelected = selectedLeaderboard?.id === b.id;
+              return (
+                <button
+                  key={b.id}
+                  onClick={() => setSelectedLeaderboard(b)}
+                  className="relative px-4 py-2 rounded-xl text-xs font-black border-2 border-[#121217] transition-colors cursor-pointer"
+                >
+                  {isSelected && (
+                    <motion.span
+                      layoutId="admin-sport-tab-capsule"
+                      className="absolute inset-0 bg-[#121217] rounded-[10px] -z-10 fest-shadow-sm"
+                      transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                    />
+                  )}
+                  <span className={`relative z-10 transition-colors ${isSelected ? 'text-white' : 'text-stone-800'}`}>
+                    {b.sport_name} ({b.status})
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
 
