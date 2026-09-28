@@ -76,10 +76,6 @@ export default function AdminDashboard() {
 
   // Leaderboard edit state
   const [selectedLeaderboard, setSelectedLeaderboard] = useState(null);
-  const [teamName, setTeamName] = useState('');
-  const [participantName, setParticipantName] = useState('');
-  const [scoreText, setScoreText] = useState('');
-  const [pointsVal, setPointsVal] = useState(0);
   const [editingScoreEntry, setEditingScoreEntry] = useState(null); // { id, points, score }
 
   // Certificate generation state
@@ -357,28 +353,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleAddOrUpdateEntry = async (e) => {
-    e.preventDefault();
-    if (!selectedLeaderboard || !teamName) return;
-    try {
-      const res = await leaderboardAPI.saveEntry(selectedLeaderboard.id, {
-        team_name: teamName,
-        participant_name: participantName,
-        score: scoreText,
-        points: pointsVal,
-        form: 'W-W',
-      });
-      setSelectedLeaderboard(res.data.leaderboard);
-      setTeamName('');
-      setParticipantName('');
-      setScoreText('');
-      setPointsVal(0);
-      notify('Score entry updated & broadcast live!');
-      fetchAllAdminData();
-    } catch (err) {
-      alert('Failed to save score entry');
-    }
-  };
 
   const handleDeleteEntry = async (entryId) => {
     if (!selectedLeaderboard) return;
@@ -1199,74 +1173,6 @@ export default function AdminDashboard() {
             ))}
           </div>
 
-          {/* Add / Update Team Score Form */}
-          <form
-            onSubmit={handleAddOrUpdateEntry}
-            className="bg-white border-2 border-[#121217] rounded-3xl p-6 fest-shadow grid grid-cols-1 sm:grid-cols-5 gap-4 items-end"
-          >
-            <div>
-              <label className="block text-[11px] font-black uppercase text-stone-600 mb-1">
-                Team / Squad Name *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Thunder XI"
-                value={teamName}
-                onChange={(e) => setTeamName(e.target.value)}
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-black uppercase text-stone-600 mb-1">
-                Captains / Players
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Sandeep & Rahul"
-                value={participantName}
-                onChange={(e) => setParticipantName(e.target.value)}
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-black uppercase text-stone-600 mb-1">
-                Score Display *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. 145 / 4 (6.0 ov) or 3 Goals"
-                value={scoreText}
-                onChange={(e) => setScoreText(e.target.value)}
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-black uppercase text-stone-600 mb-1">
-                Tournament Points
-              </label>
-              <input
-                type="number"
-                value={pointsVal}
-                onChange={(e) => setPointsVal(e.target.value)}
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl text-xs font-semibold"
-              />
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                className="w-full bg-[#16A34A] hover:bg-[#13803a] text-white py-2.5 rounded-xl font-black text-xs border border-[#121217] fest-shadow-sm flex items-center justify-center gap-1.5"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Save &amp; Broadcast
-              </button>
-            </div>
-          </form>
 
           {/* Current Entries Table with Dynamic Points Adjustment */}
           <div className="bg-white border-2 border-[#121217] rounded-3xl overflow-hidden fest-shadow">
@@ -1298,6 +1204,19 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-200 font-semibold">
+                  {(!selectedLeaderboard?.entries || selectedLeaderboard.entries.length === 0) && (
+                    <tr>
+                      <td colSpan="7" className="py-12 text-center text-stone-500">
+                        <div className="flex flex-col items-center justify-center">
+                          <span className="text-3xl mb-2">🏅</span>
+                          <p className="font-bold text-sm text-stone-700">No teams registered yet</p>
+                          <p className="text-xs text-stone-400 mt-1 max-w-sm">
+                            When participants or teams register for {selectedLeaderboard?.sport_name || 'this sport'}, they will automatically appear here.
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                   {selectedLeaderboard?.entries?.map((e) => {
                     const isEditing = editingScoreEntry?.id === e.id;
                     return (

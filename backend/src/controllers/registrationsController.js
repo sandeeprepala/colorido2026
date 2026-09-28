@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../data/db.js';
 import { sendRegistrationEmail } from '../services/emailService.js';
+import { broadcastRealtime } from '../services/realtimeService.js';
 
 export const registerForEvent = async (req, res) => {
   try {
@@ -125,6 +126,37 @@ export const registerForEvent = async (req, res) => {
     };
 
     await db.createRegistration(newRegistration);
+
+    // If it's a sports event, automatically add the registered team to the sports leaderboard
+    if (event.category?.toLowerCase() === 'sports') {
+      const regTeamName = newRegistration.registration_data?.team_name?.trim() || newRegistration.student_name || 'Participant';
+      let squadDesc = newRegistration.student_name;
+      const extraMembers = newRegistration.registration_data?.team_members;
+      if (Array.isArray(extraMembers) && extraMembers.length > 0) {
+        const names = extraMembers.map((m) => (typeof m === 'string' ? m : m.name)).filter(Boolean);
+        if (names.length > 0) {
+          squadDesc += ', ' + names.join(', ');
+        }
+      } else if (newRegistration.college) {
+        squadDesc += ` (${newRegistration.college})`;
+      }
+
+      const teamEntry = {
+        id: 'lbe-' + newRegistration.id.replace(/^reg-/, ''),
+        registration_id: newRegistration.id,
+        team_name: regTeamName,
+        participant_name: squadDesc,
+        score: '0 pts',
+        points: 0,
+        form: '-',
+        updated_at: newRegistration.registered_at || new Date().toISOString(),
+      };
+
+      const updatedBoard = await db.updateLeaderboardEntry(event.id, teamEntry);
+      if (updatedBoard) {
+        broadcastRealtime('LEADERBOARD_UPDATED', updatedBoard);
+      }
+    }
 
     // Send confirmation email
     sendRegistrationEmail(newRegistration, event).catch((err) =>

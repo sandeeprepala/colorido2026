@@ -113,6 +113,7 @@ export const syncFromPostgres = async () => {
     }
 
     state.registrations = regsRes.rows.map((r) => ({
+      ...r,
       registration_data: typeof r.registration_data === 'string' ? JSON.parse(r.registration_data) : (r.registration_data || {}),
     }));
     state.certificates = certsRes.rows.map((c) => ({
@@ -125,11 +126,11 @@ export const syncFromPostgres = async () => {
     // Automatically ensure all sports events have an active leaderboard
     const sportsEvents = state.events.filter((e) => (e.category || '').toLowerCase() === 'sports');
     for (const ev of sportsEvents) {
-      const existing = state.leaderboards.find(
+      let existing = state.leaderboards.find(
         (lb) => lb.event_id === ev.id || lb.sport_name?.toLowerCase() === ev.name?.toLowerCase()
       );
       if (!existing) {
-        const newLb = {
+        existing = {
           id: 'lb-' + ev.id.replace(/^evt-/, ''),
           event_id: ev.id,
           sport_name: ev.name,
@@ -138,15 +139,15 @@ export const syncFromPostgres = async () => {
           entries: [],
           updated_at: new Date().toISOString(),
         };
-        state.leaderboards.push(newLb);
+        state.leaderboards.push(existing);
         try {
           await pool.query(`
             INSERT INTO leaderboards (id, event_id, sport_name, status, match_info, entries, updated_at)
             VALUES ($1, $2, $3, $4, $5, $6, NOW())
             ON CONFLICT (id) DO NOTHING
           `, [
-            newLb.id, newLb.event_id, newLb.sport_name, newLb.status,
-            newLb.match_info, JSON.stringify(newLb.entries),
+            existing.id, existing.event_id, existing.sport_name, existing.status,
+            existing.match_info, JSON.stringify(existing.entries),
           ]);
         } catch (e) {
           console.error('[Database] Error auto-seeding sports leaderboard in PG:', e.message);
@@ -156,6 +157,54 @@ export const syncFromPostgres = async () => {
         try {
           await pool.query('UPDATE leaderboards SET event_id = $2 WHERE id = $1', [existing.id, ev.id]);
         } catch (e) {}
+      }
+
+      // Automatically sync confirmed registrations for this sports event into leaderboard entries
+      const eventRegs = state.registrations.filter((r) => r.event_id === ev.id && r.status !== 'cancelled');
+      let changed = false;
+      for (const reg of eventRegs) {
+        const regTeamName = reg.registration_data?.team_name?.trim() || reg.student_name || 'Participant';
+        const foundEntry = existing.entries.find(
+          (e) => (e.registration_id && e.registration_id === reg.id) || e.team_name?.toLowerCase() === regTeamName.toLowerCase()
+        );
+        if (!foundEntry) {
+          let squadDesc = reg.student_name;
+          const extraMembers = reg.registration_data?.team_members;
+          if (Array.isArray(extraMembers) && extraMembers.length > 0) {
+            const names = extraMembers.map((m) => (typeof m === 'string' ? m : m.name)).filter(Boolean);
+            if (names.length > 0) squadDesc += ', ' + names.join(', ');
+          } else if (reg.college) {
+            squadDesc += ` (${reg.college})`;
+          }
+
+          existing.entries.push({
+            id: 'lbe-' + reg.id.replace(/^reg-/, ''),
+            registration_id: reg.id,
+            team_name: regTeamName,
+            participant_name: squadDesc,
+            score: '0 pts',
+            points: 0,
+            rank: existing.entries.length + 1,
+            form: '-',
+            updated_at: reg.registered_at || new Date().toISOString(),
+          });
+          changed = true;
+        } else if (!foundEntry.registration_id) {
+          foundEntry.registration_id = reg.id;
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        existing.entries.sort((a, b) => (Number(b.points) || 0) - (Number(a.points) || 0));
+        existing.entries.forEach((e, i) => { e.rank = i + 1; });
+        try {
+          await pool.query('UPDATE leaderboards SET entries = $2, updated_at = NOW() WHERE id = $1', [
+            existing.id, JSON.stringify(existing.entries)
+          ]);
+        } catch (e) {
+          console.error('[Database] Error syncing registrations to leaderboard in PG:', e.message);
+        }
       }
     }
 
@@ -498,11 +547,11 @@ export const db = {
   getAllLeaderboards: () => {
     const sportsEvents = state.events.filter((e) => (e.category || '').toLowerCase() === 'sports');
     for (const ev of sportsEvents) {
-      const existing = state.leaderboards.find(
+      let existing = state.leaderboards.find(
         (lb) => lb.event_id === ev.id || lb.sport_name?.toLowerCase() === ev.name?.toLowerCase()
       );
       if (!existing) {
-        const newLb = {
+        existing = {
           id: 'lb-' + ev.id.replace(/^evt-/, ''),
           event_id: ev.id,
           sport_name: ev.name,
@@ -511,7 +560,47 @@ export const db = {
           entries: [],
           updated_at: new Date().toISOString(),
         };
-        state.leaderboards.push(newLb);
+        state.leaderboards.push(existing);
+      }
+
+      // Auto-sync confirmed registrations into existing.entries
+      const eventRegs = state.registrations.filter((r) => r.event_id === ev.id && r.status !== 'cancelled');
+      let changed = false;
+      for (const reg of eventRegs) {
+        const regTeamName = reg.registration_data?.team_name?.trim() || reg.student_name || 'Participant';
+        const found = existing.entries.find(
+          (e) => (e.registration_id && e.registration_id === reg.id) || e.team_name?.toLowerCase() === regTeamName.toLowerCase()
+        );
+        if (!found) {
+          let squadDesc = reg.student_name;
+          const extraMembers = reg.registration_data?.team_members;
+          if (Array.isArray(extraMembers) && extraMembers.length > 0) {
+            const names = extraMembers.map((m) => (typeof m === 'string' ? m : m.name)).filter(Boolean);
+            if (names.length > 0) squadDesc += ', ' + names.join(', ');
+          } else if (reg.college) {
+            squadDesc += ` (${reg.college})`;
+          }
+
+          existing.entries.push({
+            id: 'lbe-' + reg.id.replace(/^reg-/, ''),
+            registration_id: reg.id,
+            team_name: regTeamName,
+            participant_name: squadDesc,
+            score: '0 pts',
+            points: 0,
+            rank: existing.entries.length + 1,
+            form: '-',
+            updated_at: reg.registered_at || new Date().toISOString(),
+          });
+          changed = true;
+        } else if (!found.registration_id) {
+          found.registration_id = reg.id;
+          changed = true;
+        }
+      }
+      if (changed) {
+        existing.entries.sort((a, b) => (Number(b.points) || 0) - (Number(a.points) || 0));
+        existing.entries.forEach((e, i) => { e.rank = i + 1; });
       }
     }
     return state.leaderboards;
@@ -557,15 +646,36 @@ export const db = {
     return board;
   },
   updateLeaderboardEntry: async (boardId, entryData) => {
-    const idx = state.leaderboards.findIndex((lb) => lb.id === boardId || lb.event_id === boardId);
-    if (idx === -1) return null;
+    let idx = state.leaderboards.findIndex((lb) => lb.id === boardId || lb.event_id === boardId);
+    if (idx === -1) {
+      const ev = state.events.find((e) => e.id === boardId);
+      if (ev) {
+        const newLb = {
+          id: 'lb-' + ev.id.replace(/^evt-/, ''),
+          event_id: ev.id,
+          sport_name: ev.name,
+          status: 'UPCOMING',
+          match_info: `${ev.venue || 'Sports Complex'} • Starts at ${ev.start_time || '10:00 AM'}`,
+          entries: [],
+          updated_at: new Date().toISOString(),
+        };
+        state.leaderboards.push(newLb);
+        idx = state.leaderboards.length - 1;
+      } else {
+        return null;
+      }
+    }
     const board = state.leaderboards[idx];
-    const entryIdx = board.entries.findIndex((e) => e.id === entryData.id);
+    const entryIdx = board.entries.findIndex(
+      (e) => (entryData.id && e.id === entryData.id) ||
+             (entryData.registration_id && e.registration_id === entryData.registration_id) ||
+             (entryData.team_name && e.team_name?.toLowerCase() === entryData.team_name?.toLowerCase())
+    );
     if (entryIdx !== -1) {
       board.entries[entryIdx] = { ...board.entries[entryIdx], ...entryData };
     } else {
       board.entries.push({
-        id: 'lbe-' + Date.now().toString(36),
+        id: entryData.id || ('lbe-' + Date.now().toString(36)),
         ...entryData,
       });
     }
