@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, Filter, Calendar, MapPin, Sparkles, RefreshCw } from 'lucide-react';
 import EventCard from '../components/common/EventCard';
+import MorphSelect from '../components/common/MorphSelect';
 import { motion } from 'framer-motion';
 import { eventsAPI } from '../services/api';
 
@@ -141,16 +142,17 @@ export default function EventsPage() {
 
           {/* Date Filter */}
           <div className="sm:col-span-3">
-            <select
+            <MorphSelect
               value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-3 py-2.5 bg-stone-50 border-2 border-stone-300 rounded-xl text-xs sm:text-sm font-semibold text-stone-700 focus:outline-hidden focus:border-[#121217]"
-            >
-              <option value="all">📅 All Dates</option>
-              <option value="2026-10-18">Day 1: Oct 18, 2026</option>
-              <option value="2026-10-19">Day 2: Oct 19, 2026</option>
-              <option value="2026-10-20">Day 3: Oct 20, 2026</option>
-            </select>
+              onChange={(val) => setSelectedDate(val)}
+              placeholder="All Dates"
+              options={[
+                { value: 'all', label: '📅 All Dates' },
+                { value: '2026-10-18', label: 'Day 1: Oct 18, 2026' },
+                { value: '2026-10-19', label: 'Day 2: Oct 19, 2026' },
+                { value: '2026-10-20', label: 'Day 3: Oct 20, 2026' },
+              ]}
+            />
           </div>
 
           {/* Action Buttons */}

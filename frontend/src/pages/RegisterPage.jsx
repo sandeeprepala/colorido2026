@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Sparkles, AlertCircle, ArrowRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import MorphSelect from '../components/common/MorphSelect';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -147,17 +148,19 @@ export default function RegisterPage() {
               <label className="block text-xs font-black uppercase tracking-wider text-stone-700 mb-1">
                 Year of Study
               </label>
-              <select
+              <MorphSelect
                 value={formData.year}
-                onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                className="w-full px-3 py-2.5 bg-stone-50 border-2 border-[#121217] rounded-xl text-sm font-semibold focus:outline-hidden focus:bg-white"
-              >
-                <option value="1st Year">1st Year</option>
-                <option value="2nd Year">2nd Year</option>
-                <option value="3rd Year">3rd Year</option>
-                <option value="4th Year">4th Year</option>
-                <option value="Postgraduate">Postgraduate</option>
-              </select>
+                onChange={(val) => setFormData({ ...formData, year: val })}
+                placeholder="Select Year"
+                width="100%"
+                options={[
+                  { value: '1st Year', label: '1st Year' },
+                  { value: '2nd Year', label: '2nd Year' },
+                  { value: '3rd Year', label: '3rd Year' },
+                  { value: '4th Year', label: '4th Year' },
+                  { value: 'Postgraduate', label: 'Postgraduate' },
+                ]}
+              />
             </div>
           </div>
 

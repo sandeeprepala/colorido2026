@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
@@ -6,11 +6,11 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import ProfileMorphMenu from './ProfileMorphMenu';
 
 export default function Navbar() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [hoveredPath, setHoveredPath] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -129,72 +129,9 @@ export default function Navbar() {
                   </Link>
                 )}
 
-                <div className="relative">
-                  <button
-                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                    className="flex items-center gap-2 bg-white border-2 border-[#121217] px-3.5 py-1.5 rounded-full font-bold text-sm fest-shadow-sm hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
-                  >
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-black ${
-                    isAdmin ? 'bg-[#8E44FF]' : 'bg-[#E91E63]'
-                  }`}>
-                    {user?.name?.[0]?.toUpperCase() || 'U'}
-                  </div>
-                  <span className="max-w-[110px] truncate">{user?.name?.split(' ')[0]}</span>
-                  <ChevronDown className="w-4 h-4 text-stone-500" />
-                </button>
-
-                {userDropdownOpen && (
-                  <div 
-                    className="absolute right-0 mt-2 w-56 bg-white border-2 border-[#121217] rounded-2xl p-2 fest-shadow-lg z-50 animate-in fade-in zoom-in-95 duration-100"
-                    onMouseLeave={() => setUserDropdownOpen(false)}
-                  >
-                    <div className="p-3 border-b border-stone-200">
-                      <p className="text-xs text-stone-500 font-semibold uppercase tracking-wider">
-                        {user?.role === 'admin' ? 'Admin Access' : 'Student Account'}
-                      </p>
-                      <p className="font-bold text-sm text-[#121217] truncate">{user?.name}</p>
-                      <p className="text-xs text-stone-500 truncate">{user?.email}</p>
-                    </div>
-
-                    <div className="py-1">
-                      {!isAdmin && (
-                        <Link
-                          to="/my-festival"
-                          onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 rounded-xl transition-colors"
-                        >
-                          <Ticket className="w-4 h-4 text-[#E91E63]" />
-                          My Festival &amp; QR Pass
-                        </Link>
-                      )}
-
-                      <Link
-                        to="/profile"
-                        onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100 rounded-xl transition-colors"
-                      >
-                        <User className="w-4 h-4 text-stone-500" />
-                        My Profile
-                      </Link>
-                    </div>
-
-                    <div className="pt-1 border-t border-stone-200">
-                      <button
-                        onClick={() => {
-                          logout();
-                          setUserDropdownOpen(false);
-                          navigate('/');
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                      </button>
-                    </div>
-                  </div>
-                )}
+                {/* Profile Pill with Transitions.dev Spring Morph Animation */}
+                <ProfileMorphMenu user={user} isAdmin={isAdmin} logout={logout} />
               </div>
-            </div>
             ) : (
               <div className="flex items-center gap-2">
                 <Link
