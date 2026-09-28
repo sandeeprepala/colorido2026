@@ -10,6 +10,7 @@ import EventCard from '../components/common/EventCard';
 import { eventsAPI, leaderboardAPI, discussionAPI } from '../services/api';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import { PerspectiveGrid } from '@/components/ui/perspective-grid';
 
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
@@ -52,14 +53,18 @@ export default function HomePage() {
 
       {/* 1. HERO SECTION (Inspired by the COLORIDO '26 Poster) */}
       <section className="relative pt-6 sm:pt-12 pb-12 overflow-hidden">
+        {/* Interactive 3D Perspective Grid Background with smooth hover trail */}
+        <div className="absolute inset-0 z-0 pointer-events-auto overflow-hidden">
+          <PerspectiveGrid className="w-full h-full" gridSize={32} fadeRadius={82} />
+        </div>
 
         {/* Subtle decorative background noise */}
-        <div className="absolute inset-0 bg-grain opacity-60 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-grain opacity-40 pointer-events-none z-1"></div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pointer-events-none">
 
           {/* Top Tagline Sticker & Category Badges */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6 sm:mb-8 pointer-events-auto">
             <div className="inline-flex items-center gap-2 bg-white border-2 border-[#121217] px-4 py-1.5 rounded-full fest-shadow-sm -rotate-1 hover:rotate-0 transition-transform">
               <span className="w-2.5 h-2.5 rounded-full bg-[#E91E63] animate-ping"></span>
               <span className="font-hand text-lg sm:text-xl text-[#121217]">
@@ -115,7 +120,7 @@ export default function HomePage() {
               </p>
 
               {/* Date & Location Badges */}
-              <div className="flex flex-wrap items-center gap-3 pt-1">
+              <div className="flex flex-wrap items-center gap-3 pt-1 pointer-events-auto">
                 <div className="flex items-center gap-2 bg-white border-2 border-[#121217] px-4 py-2 rounded-2xl fest-shadow-sm font-bold text-xs sm:text-sm text-[#121217]">
                   <Calendar className="w-4 h-4 text-[#FF7A00]" />
                   <span>OCTOBER 18 – 20, 2026</span>
@@ -127,7 +132,7 @@ export default function HomePage() {
               </div>
 
               {/* CTAs */}
-              <div className="flex flex-wrap items-center gap-4 pt-3">
+              <div className="flex flex-wrap items-center gap-4 pt-3 pointer-events-auto">
                 <Link
                   to={isAuthenticated ? '/events' : '/register'}
                   className="bg-[#121217] hover:bg-[#E91E63] text-white px-8 py-4 rounded-full font-black text-sm sm:text-base border-2 border-[#121217] fest-shadow-lg transition-all flex items-center gap-2 group"
@@ -148,7 +153,7 @@ export default function HomePage() {
             </div>
 
             {/* Right Column: Festival Collage Poster Artwork */}
-            <div className="lg:col-span-5 relative">
+            <div className="lg:col-span-5 relative pointer-events-auto">
               <div className="relative mx-auto max-w-md lg:max-w-none">
 
                 {/* Vintage Festival Poster Artwork Container */}
