@@ -1166,22 +1166,14 @@ export default function AdminDashboard() {
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleOpenCreateEvent('sports')}
-                className="bg-[#121217] hover:bg-[#16A34A] text-white px-3.5 py-1.5 rounded-full text-xs font-black border-2 border-[#121217] fest-shadow-sm flex items-center gap-1 transition-all cursor-pointer"
-                title="Create a new Sports event (automatically generates a leaderboard)"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                CREATE SPORTS EVENT
-              </button>
               {['LIVE', 'UPCOMING', 'COMPLETED'].map((st) => (
                 <button
                   key={st}
                   onClick={() => handleUpdateMatchStatus(st)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-black uppercase border-2 border-[#121217] transition-all ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-black uppercase border-2 border-[#121217] transition-all cursor-pointer ${
                     selectedLeaderboard?.status === st
                       ? st === 'LIVE' ? 'bg-rose-500 text-white' : 'bg-[#121217] text-white'
-                      : 'bg-white text-stone-700'
+                      : 'bg-white text-stone-700 hover:bg-stone-100'
                   }`}
                 >
                   Set {st}
@@ -1748,6 +1740,11 @@ export default function AdminDashboard() {
                     <option value="cultural">Cultural</option>
                     <option value="sports">Sports</option>
                   </select>
+                  {eventFormData.category === 'sports' && (
+                    <span className="text-[10px] text-[#16A34A] font-bold block mt-1">
+                      🏆 Selecting Sports automatically creates its live leaderboard in the Sports tab.
+                    </span>
+                  )}
                 </div>
               </div>
 
