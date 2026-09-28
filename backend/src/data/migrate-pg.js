@@ -1,6 +1,6 @@
 import pkg from 'pg';
 import bcrypt from 'bcryptjs';
-import { initialEvents, initialStalls, initialLeaderboards } from './seedData.js';
+import { initialEvents, initialStalls, initialLeaderboards, initialDiscussion } from './seedData.js';
 
 const { Pool } = pkg;
 
@@ -136,7 +136,7 @@ export async function runMigrationAndSeed() {
 
       CREATE TABLE IF NOT EXISTS discussion_messages (
         id TEXT PRIMARY KEY,
-        user_id TEXT REFERENCES profiles(id) ON DELETE SET NULL,
+        user_id TEXT,
         user_name TEXT NOT NULL,
         user_role TEXT DEFAULT 'student',
         user_dept TEXT,
@@ -344,7 +344,23 @@ export async function runMigrationAndSeed() {
         JSON.stringify(lb.entries || []),
       ]);
     }
-    console.log(`[PostgreSQL] ${initialLeaderboards.length} sports leaderboards seeded successfully.`);
+    // 6. Populate initial discussion messages
+    for (const msg of initialDiscussion) {
+      await client.query(`
+        INSERT INTO discussion_messages (id, user_id, user_name, user_role, user_dept, message, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        ON CONFLICT (id) DO NOTHING;
+      `, [
+        msg.id,
+        msg.user_id,
+        msg.user_name,
+        msg.user_role || 'student',
+        msg.user_dept || 'Festival Community',
+        msg.message,
+        msg.created_at || new Date().toISOString(),
+      ]);
+    }
+    console.log(`[PostgreSQL] ${initialDiscussion.length} discussion messages seeded successfully.`);
 
     console.log('[PostgreSQL] Migration & Seed Complete!');
   } catch (err) {

@@ -1,6 +1,6 @@
 import pkg from 'pg';
 import bcrypt from 'bcryptjs';
-import { initialEvents, initialStalls, initialLeaderboards } from './seedData.js';
+import { initialEvents, initialStalls, initialLeaderboards, initialDiscussion } from './seedData.js';
 
 const { Pool } = pkg;
 
@@ -46,7 +46,7 @@ let state = {
   events: initialEvents || [],
   stalls: initialStalls || [],
   leaderboards: initialLeaderboards || [],
-  discussion: [],
+  discussion: (initialDiscussion || []).map((m) => ({ ...m })),
   registrations: [],
   certificates: [],
   stallApplications: [],
@@ -94,9 +94,25 @@ export const syncFromPostgres = async () => {
       ...lb,
       entries: typeof lb.entries === 'string' ? JSON.parse(lb.entries) : (lb.entries || []),
     }));
-    state.discussion = discRes.rows;
+
+    if (discRes.rows.length > 0) {
+      state.discussion = discRes.rows;
+    } else {
+      state.discussion = (initialDiscussion || []).map((m) => ({ ...m }));
+      for (const msg of state.discussion) {
+        try {
+          await pool.query(`
+            INSERT INTO discussion_messages (id, user_id, user_name, user_role, user_dept, message, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            ON CONFLICT (id) DO NOTHING
+          `, [msg.id, msg.user_id, msg.user_name, msg.user_role || 'student', msg.user_dept || 'Festival Community', msg.message, msg.created_at || new Date().toISOString()]);
+        } catch (e) {
+          console.error('[Database] Error seeding initial discussion in PG:', e.message);
+        }
+      }
+    }
+
     state.registrations = regsRes.rows.map((r) => ({
-      ...r,
       registration_data: typeof r.registration_data === 'string' ? JSON.parse(r.registration_data) : (r.registration_data || {}),
     }));
     state.certificates = certsRes.rows.map((c) => ({
@@ -611,6 +627,18 @@ export const db = {
   },
 
   // Discussion
+  getAllDiscussionAsync: async () => {
+    try {
+      const res = await pool.query('SELECT * FROM discussion_messages ORDER BY created_at ASC');
+      if (res.rows.length > 0) {
+        state.discussion = res.rows;
+      }
+      return state.discussion;
+    } catch (e) {
+      console.error('[Database] Error fetching discussion from PG:', e.message);
+      return state.discussion;
+    }
+  },
   getAllDiscussion: () => state.discussion,
   addDiscussionMessage: async (msg) => {
     state.discussion.push(msg);
@@ -618,7 +646,10 @@ export const db = {
       await pool.query(`
         INSERT INTO discussion_messages (id, user_id, user_name, user_role, user_dept, message, created_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
-      `, [msg.id, msg.user_id, msg.user_name, msg.user_role, msg.user_dept, msg.message, msg.created_at]);
+        ON CONFLICT (id) DO UPDATE SET
+          message = EXCLUDED.message,
+          created_at = EXCLUDED.created_at
+      `, [msg.id, msg.user_id, msg.user_name, msg.user_role || 'student', msg.user_dept || 'Festival Community', msg.message, msg.created_at || new Date().toISOString()]);
     } catch (e) {
       console.error('[Database] Error adding discussion message in PG:', e.message);
     }
@@ -626,8 +657,9 @@ export const db = {
   },
   deleteDiscussionMessage: async (id) => {
     const idx = state.discussion.findIndex((m) => m.id === id);
-    if (idx === -1) return false;
-    state.discussion.splice(idx, 1);
+    if (idx !== -1) {
+      state.discussion.splice(idx, 1);
+    }
     try {
       await pool.query('DELETE FROM discussion_messages WHERE id = $1', [id]);
     } catch (e) {

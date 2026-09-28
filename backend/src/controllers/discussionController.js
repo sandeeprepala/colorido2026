@@ -4,7 +4,7 @@ import { broadcastRealtime } from '../services/realtimeService.js';
 
 export const getDiscussion = async (req, res) => {
   try {
-    const messages = db.getAllDiscussion();
+    const messages = await db.getAllDiscussionAsync();
     return res.json({ messages });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to retrieve discussion messages.' });
@@ -22,15 +22,15 @@ export const postMessage = async (req, res) => {
 
     const newMsg = {
       id: 'msg-' + uuidv4(),
-      user_id: user.id,
-      user_name: user.name,
-      user_role: user.role,
+      user_id: user.id || null,
+      user_name: user.name || 'Anonymous Student',
+      user_role: user.role || 'student',
       user_dept: user.department || 'Festival Member',
       message: message.trim(),
       created_at: new Date().toISOString(),
     };
 
-    db.addDiscussionMessage(newMsg);
+    await db.addDiscussionMessage(newMsg);
 
     // Broadcast instant update
     broadcastRealtime('DISCUSSION_MESSAGE_ADDED', newMsg);
@@ -45,7 +45,7 @@ export const postMessage = async (req, res) => {
 export const deleteMessage = async (req, res) => {
   try {
     const { id } = req.params;
-    const success = db.deleteDiscussionMessage(id);
+    const success = await db.deleteDiscussionMessage(id);
     if (!success) {
       return res.status(404).json({ error: 'Message not found.' });
     }
