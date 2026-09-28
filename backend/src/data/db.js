@@ -15,7 +15,32 @@ export const pool = new Pool({
 });
 
 let state = {
-  profiles: [],
+  profiles: [
+    {
+      id: 'usr-admin-initial',
+      username: 'admin',
+      name: 'Festival Administrator',
+      email: 'admin@colorido.fest',
+      password: bcrypt.hashSync('colorido@2026', 10),
+      role: 'admin',
+      college: 'Festival Admin Council',
+      department: 'Central Committee',
+      created_at: '2026-01-01T00:00:00.000Z',
+    },
+    {
+      id: 'usr-sandeep-initial',
+      username: 'sandeep',
+      name: 'Sandeep Repala',
+      email: 'sandeep@colorido.fest',
+      password: bcrypt.hashSync('colorido@2026', 10),
+      role: 'student',
+      college: 'Apex Institute of Technology',
+      department: 'Computer Science & Engineering',
+      year: '3rd Year',
+      student_id: 'Y23CS116',
+      created_at: '2026-01-01T00:00:00.000Z',
+    },
+  ],
   events: [],
   stalls: [],
   leaderboards: [],
@@ -25,6 +50,8 @@ let state = {
   stallApplications: [],
   emailLogs: [],
 };
+
+let syncPromise = null;
 
 // Initial sync from PostgreSQL
 export const syncFromPostgres = async () => {
@@ -51,7 +78,9 @@ export const syncFromPostgres = async () => {
       pool.query('SELECT * FROM email_logs ORDER BY sent_at DESC'),
     ]);
 
-    state.profiles = profilesRes.rows;
+    if (profilesRes.rows.length > 0) {
+      state.profiles = profilesRes.rows;
+    }
     state.events = eventsRes.rows.map((e) => ({
       ...e,
       rounds: typeof e.rounds === 'string' ? JSON.parse(e.rounds) : (e.rounds || []),
@@ -82,10 +111,19 @@ export const syncFromPostgres = async () => {
 };
 
 // Initial run
-syncFromPostgres();
+syncPromise = syncFromPostgres();
+
+export const ensureSynced = async () => {
+  if (syncPromise) {
+    try {
+      await syncPromise;
+    } catch (e) {}
+  }
+};
 
 export const db = {
   sync: syncFromPostgres,
+  ensureSynced,
 
   // Users / Profiles
   findUserByIdentifier: (identifier) => {
@@ -93,6 +131,22 @@ export const db = {
     return state.profiles.find(
       (p) => p.username?.toLowerCase() === idf || p.email?.toLowerCase() === idf
     );
+  },
+  findUserByIdentifierAsync: async (identifier) => {
+    let user = db.findUserByIdentifier(identifier);
+    if (!user) {
+      try {
+        const idf = (identifier || '').toLowerCase().trim();
+        const res = await pool.query('SELECT * FROM profiles WHERE LOWER(username) = $1 OR LOWER(email) = $1', [idf]);
+        if (res.rows[0]) {
+          user = res.rows[0];
+          state.profiles.push(user);
+        }
+      } catch (e) {
+        console.error('[Database] Direct user lookup error:', e.message);
+      }
+    }
+    return user;
   },
   findUserByEmail: (email) => {
     const em = (email || '').toLowerCase().trim();

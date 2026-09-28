@@ -2,9 +2,21 @@
   "name": "colorido-fest-2026",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "COLORIDO '26 College Festival Platform",
   "scripts": {
     "build": "cd frontend && npm install && npm run build",
-    "start": "cd backend && npm start"
+    "start": "node backend/src/server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.10.0",
+    "pg": "^8.23.0",
+    "uuid": "^11.1.0"
   }
 }

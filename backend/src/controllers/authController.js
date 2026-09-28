@@ -56,7 +56,11 @@ export const login = async (req, res) => {
       return res.status(400).json({ error: 'Username or email, and password are required.' });
     }
 
-    const user = db.findUserByIdentifier(loginIdentifier);
+    let user = db.findUserByIdentifier(loginIdentifier);
+    if (!user && db.findUserByIdentifierAsync) {
+      user = await db.findUserByIdentifierAsync(loginIdentifier);
+    }
+
     if (!user) {
       return res.status(401).json({ error: 'Invalid username/email or password.' });
     }
