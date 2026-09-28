@@ -159,12 +159,12 @@ export default function GalleryPage() {
                 setActiveFilter(cat);
                 setActiveModalIdx(null);
               }}
-              className="relative px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors cursor-pointer select-none"
+              className="relative isolate px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-colors cursor-pointer select-none"
             >
               {isSelected && (
                 <motion.span
                   layoutId="gallery-category-capsule"
-                  className="absolute inset-0 bg-[#121217] rounded-xl -z-10 shadow-xs"
+                  className="absolute inset-0 bg-[#121217] rounded-xl z-0 shadow-xs"
                   transition={{ type: 'spring', stiffness: 420, damping: 30 }}
                 />
               )}

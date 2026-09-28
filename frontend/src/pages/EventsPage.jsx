@@ -105,14 +105,14 @@ export default function EventsPage() {
               <button
                 key={tab.id}
                 onClick={() => handleCategoryChange(tab.id)}
-                className={`relative px-4 py-2 rounded-2xl text-xs sm:text-sm font-black transition-colors cursor-pointer select-none ${
+                className={`relative isolate px-4 py-2 rounded-2xl text-xs sm:text-sm font-black transition-colors cursor-pointer select-none ${
                   isSelected ? '' : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
                 }`}
               >
                 {isSelected && (
                   <motion.span
                     layoutId="events-category-capsule"
-                    className={`absolute inset-0 ${tab.color.split(' ')[0]} rounded-2xl -z-10 fest-shadow-sm`}
+                    className={`absolute inset-0 ${tab.color.split(' ')[0]} rounded-2xl z-0 fest-shadow-sm`}
                     transition={{ type: 'spring', stiffness: 420, damping: 30 }}
                   />
                 )}

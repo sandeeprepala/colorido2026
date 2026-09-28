@@ -88,12 +88,14 @@ export default function LeaderboardPage() {
             <button
               key={b.id}
               onClick={() => setActiveBoardId(b.id)}
-              className="relative px-4 sm:px-5 py-2.5 rounded-2xl font-black text-xs sm:text-sm border-2 border-[#121217] transition-colors flex items-center gap-2 cursor-pointer select-none"
+              className={`relative isolate px-4 sm:px-5 py-2.5 rounded-2xl font-black text-xs sm:text-sm border-2 border-[#121217] transition-colors flex items-center gap-2 cursor-pointer select-none ${
+                isSelected ? '' : 'bg-white hover:bg-stone-50'
+              }`}
             >
               {isSelected && (
                 <motion.span
                   layoutId="leaderboard-sport-capsule"
-                  className="absolute inset-0 bg-[#121217] rounded-[14px] -z-10 fest-shadow-sm"
+                  className="absolute inset-0 bg-[#121217] rounded-[14px] z-0 fest-shadow-sm"
                   transition={{ type: 'spring', stiffness: 420, damping: 30 }}
                 />
               )}

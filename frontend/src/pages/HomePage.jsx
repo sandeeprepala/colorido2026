@@ -266,12 +266,12 @@ export default function HomePage() {
                 <button
                   key={cat}
                   onClick={() => setFeaturedCategory(cat)}
-                  className="relative px-3.5 py-1.5 rounded-xl capitalize transition-colors cursor-pointer select-none"
+                  className="relative isolate px-3.5 py-1.5 rounded-xl capitalize transition-colors cursor-pointer select-none"
                 >
                   {isSelected && (
                     <motion.span
                       layoutId="home-featured-capsule"
-                      className="absolute inset-0 bg-[#121217] rounded-xl -z-10 shadow-xs"
+                      className="absolute inset-0 bg-[#121217] rounded-xl z-0 shadow-xs"
                       transition={{ type: 'spring', stiffness: 420, damping: 30 }}
                     />
                   )}

@@ -582,13 +582,13 @@ export default function AdminDashboard() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               onMouseEnter={() => setHoveredAdminTab(tab.id)}
-              className="relative px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl whitespace-nowrap transition-colors flex-1 text-center shrink-0 cursor-pointer select-none"
+              className="relative isolate px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl whitespace-nowrap transition-colors flex-1 text-center shrink-0 cursor-pointer select-none"
             >
               {/* Active sliding capsule */}
               {isActive && (
                 <motion.span
                   layoutId="admin-active-tab-capsule"
-                  className="absolute inset-0 bg-[#121217] rounded-xl -z-10 fest-shadow-sm"
+                  className="absolute inset-0 bg-[#121217] rounded-xl z-0 fest-shadow-sm"
                   transition={{
                     type: 'spring',
                     stiffness: 420,
@@ -602,7 +602,7 @@ export default function AdminDashboard() {
               {isHovered && !isActive && (
                 <motion.span
                   layoutId="admin-hover-tab-capsule"
-                  className="absolute inset-0 bg-stone-100 rounded-xl -z-10"
+                  className="absolute inset-0 bg-stone-100 rounded-xl z-0"
                   transition={{
                     type: 'spring',
                     stiffness: 450,
@@ -1076,12 +1076,12 @@ export default function AdminDashboard() {
                   <button
                     key={st}
                     onClick={() => setRegStatusFilter(st)}
-                    className="relative px-3.5 py-1 rounded-full text-xs font-black capitalize transition-colors cursor-pointer"
+                    className="relative isolate px-3.5 py-1 rounded-full text-xs font-black capitalize transition-colors cursor-pointer"
                   >
                     {isSelected && (
                       <motion.span
                         layoutId="admin-reg-status-capsule"
-                        className="absolute inset-0 bg-[#121217] rounded-full -z-10 fest-shadow-sm"
+                        className="absolute inset-0 bg-[#121217] rounded-full z-0 fest-shadow-sm"
                         transition={{ type: 'spring', stiffness: 450, damping: 32 }}
                       />
                     )}
@@ -1208,12 +1208,12 @@ export default function AdminDashboard() {
                   <button
                     key={st}
                     onClick={() => handleUpdateMatchStatus(st)}
-                    className="relative px-3.5 py-1.5 rounded-full text-xs font-black uppercase border-2 border-[#121217] transition-colors cursor-pointer select-none"
+                    className="relative isolate px-3.5 py-1.5 rounded-full text-xs font-black uppercase border-2 border-[#121217] transition-colors cursor-pointer select-none"
                   >
                     {isSelected && (
                       <motion.span
                         layoutId="admin-match-status-capsule"
-                        className={`absolute inset-0 rounded-full -z-10 ${st === 'LIVE' ? 'bg-rose-500' : 'bg-[#121217]'}`}
+                        className={`absolute inset-0 rounded-full z-0 ${st === 'LIVE' ? 'bg-rose-500' : 'bg-[#121217]'}`}
                         transition={{ type: 'spring', stiffness: 450, damping: 30 }}
                       />
                     )}
@@ -1234,12 +1234,12 @@ export default function AdminDashboard() {
                 <button
                   key={b.id}
                   onClick={() => setSelectedLeaderboard(b)}
-                  className="relative px-4 py-2 rounded-xl text-xs font-black border-2 border-[#121217] transition-colors cursor-pointer"
+                  className="relative isolate px-4 py-2 rounded-xl text-xs font-black border-2 border-[#121217] transition-colors cursor-pointer"
                 >
                   {isSelected && (
                     <motion.span
                       layoutId="admin-sport-tab-capsule"
-                      className="absolute inset-0 bg-[#121217] rounded-[10px] -z-10 fest-shadow-sm"
+                      className="absolute inset-0 bg-[#121217] rounded-[10px] z-0 fest-shadow-sm"
                       transition={{ type: 'spring', stiffness: 420, damping: 30 }}
                     />
                   )}

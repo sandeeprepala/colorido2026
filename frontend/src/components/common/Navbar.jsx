@@ -66,13 +66,13 @@ export default function Navbar() {
                   key={link.path}
                   to={link.path}
                   onMouseEnter={() => setHoveredPath(link.path)}
-                  className="relative px-3 xl:px-4 py-1.5 text-xs xl:text-sm rounded-full font-black transition-colors duration-200 z-10 select-none flex items-center justify-center cursor-pointer"
+                  className="relative isolate px-3 xl:px-4 py-1.5 text-xs xl:text-sm rounded-full font-black transition-colors duration-200 select-none flex items-center justify-center cursor-pointer"
                 >
                   {/* Active sliding capsule */}
                   {active && (
                     <motion.span
                       layoutId="navbar-active-capsule"
-                      className="absolute inset-0 bg-[#121217] rounded-full -z-10 shadow-sm"
+                      className="absolute inset-0 bg-[#121217] rounded-full z-0 shadow-sm"
                       transition={{
                         type: 'spring',
                         stiffness: 420,
@@ -86,7 +86,7 @@ export default function Navbar() {
                   {isHovered && !active && (
                     <motion.span
                       layoutId="navbar-hover-capsule"
-                      className="absolute inset-0 bg-stone-300/70 rounded-full -z-10"
+                      className="absolute inset-0 bg-stone-300/70 rounded-full z-0"
                       transition={{
                         type: 'spring',
                         stiffness: 450,
