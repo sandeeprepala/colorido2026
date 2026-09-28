@@ -544,7 +544,7 @@ export default function AdminDashboard() {
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex overflow-x-auto gap-2 bg-white p-2 rounded-2xl border-2 border-[#121217] fest-shadow-sm text-xs font-black">
+      <div className="flex flex-wrap lg:flex-nowrap items-center gap-1.5 sm:gap-2 bg-white p-2 rounded-2xl border-2 border-[#121217] fest-shadow-sm text-xs font-black overflow-x-auto no-scrollbar">
         {[
           { id: 'overview', label: '📊 Overview' },
           { id: 'events', label: `🎪 Events (${events.length})` },
@@ -558,10 +558,10 @@ export default function AdminDashboard() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2.5 rounded-xl whitespace-nowrap transition-all ${
+            className={`px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl whitespace-nowrap transition-all flex-1 text-center shrink-0 ${
               activeTab === tab.id
                 ? 'bg-[#121217] text-white fest-shadow-sm'
-                : 'text-stone-700 hover:bg-stone-100'
+                : 'text-stone-700 hover:bg-stone-100 hover:text-stone-900'
             }`}
           >
             {tab.label}
@@ -762,18 +762,18 @@ export default function AdminDashboard() {
           </div>
 
           <div className="bg-white border-2 border-[#121217] rounded-3xl overflow-hidden fest-shadow">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto no-scrollbar">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-stone-100 border-b-2 border-[#121217] font-black uppercase text-stone-600">
-                    <th className="py-3 px-4">Event Name</th>
-                    <th className="py-3 px-4">Category</th>
-                    <th className="py-3 px-4">Team Size</th>
-                    <th className="py-3 px-4">Date &amp; Time</th>
-                    <th className="py-3 px-4">Venue</th>
-                    <th className="py-3 px-4">Prize Pool &amp; Podium (1st/2nd/3rd)</th>
-                    <th className="py-3 px-4 text-center">Registrations</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
+                    <th className="py-3 px-4 min-w-[140px]">Event Name</th>
+                    <th className="py-3 px-4 min-w-[90px]">Category</th>
+                    <th className="py-3 px-4 min-w-[105px]">Team Size</th>
+                    <th className="py-3 px-4 min-w-[130px]">Date &amp; Time</th>
+                    <th className="py-3 px-4 min-w-[130px]">Venue</th>
+                    <th className="py-3 px-4 min-w-[160px]">Prize Pool &amp; Podium</th>
+                    <th className="py-3 px-4 text-center min-w-[95px]">Registrations</th>
+                    <th className="py-3 px-4 text-right min-w-[85px]">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-200 font-semibold">
@@ -782,7 +782,7 @@ export default function AdminDashboard() {
                       <td className="py-3.5 px-4 font-bold text-sm text-[#121217]">
                         {evt.name}
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <span className={`px-2.5 py-0.5 rounded-full font-black uppercase text-[10px] ${
                           evt.category === 'technical'
                             ? 'bg-[#8E44FF] text-white'
@@ -793,7 +793,7 @@ export default function AdminDashboard() {
                           {evt.category}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black ${
                           Number(evt.max_team_size) === 1
                             ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
@@ -804,7 +804,7 @@ export default function AdminDashboard() {
                             : `👥 ${evt.min_team_size || 1}-${evt.max_team_size || 4} Members`}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 text-stone-600">
+                      <td className="py-3.5 px-4 text-stone-600 whitespace-nowrap">
                         {evt.event_date} <br />
                         <span className="text-[11px] text-stone-400">{evt.start_time} - {evt.end_time}</span>
                       </td>
@@ -812,19 +812,19 @@ export default function AdminDashboard() {
                       <td className="py-3.5 px-4">
                         <span className="font-bold text-[#FF7A00] block">{evt.prize_pool}</span>
                         {(evt.prize_1st || evt.prize_2nd || evt.prize_3rd) && (
-                          <div className="text-[10px] text-stone-600 font-semibold space-x-1.5 mt-0.5 whitespace-nowrap">
-                            <span className="text-amber-800 font-black">🥇 {evt.prize_1st}</span>
-                            <span className="text-slate-800 font-bold">🥈 {evt.prize_2nd}</span>
-                            <span className="text-orange-900 font-semibold">🥉 {evt.prize_3rd}</span>
+                          <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] text-stone-600 font-semibold mt-0.5">
+                            {evt.prize_1st && <span className="text-amber-800 font-black">🥇 {evt.prize_1st}</span>}
+                            {evt.prize_2nd && <span className="text-slate-800 font-bold">🥈 {evt.prize_2nd}</span>}
+                            {evt.prize_3rd && <span className="text-orange-900 font-semibold">🥉 {evt.prize_3rd}</span>}
                           </div>
                         )}
                       </td>
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
                         <span className="font-bold bg-stone-100 px-2.5 py-1 rounded-md">
                           {evt.registered_count || 0} / {evt.max_participants || 100}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 text-right space-x-2">
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap space-x-1.5">
                         <button
                           onClick={() => handleOpenEditEvent(evt)}
                           title="Edit Event"
@@ -1034,7 +1034,7 @@ export default function AdminDashboard() {
 
           {/* Table */}
           <div className="bg-white border-2 border-[#121217] rounded-3xl overflow-hidden fest-shadow">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto no-scrollbar">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-stone-100 border-b-2 border-[#121217] font-black uppercase text-stone-600">
@@ -1190,7 +1190,7 @@ export default function AdminDashboard() {
               </span>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto no-scrollbar">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-stone-100 border-b-2 border-[#121217] font-black uppercase text-stone-600">
