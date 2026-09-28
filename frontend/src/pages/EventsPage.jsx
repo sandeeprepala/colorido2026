@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, Filter, Calendar, MapPin, Sparkles, RefreshCw } from 'lucide-react';
 import EventCard from '../components/common/EventCard';
+import { motion } from 'framer-motion';
 import { eventsAPI } from '../services/api';
 
 export default function EventsPage() {
@@ -92,25 +93,35 @@ export default function EventsPage() {
       <div className="bg-white border-2 border-[#121217] rounded-3xl p-5 sm:p-6 fest-shadow space-y-4">
         
         {/* Category Tabs */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-stone-200 pb-4">
+        <div className="flex flex-wrap items-center gap-2 border-b border-stone-200 pb-4 relative">
           {[
             { id: 'all', label: 'All Arenas', color: 'bg-[#121217] text-white' },
             { id: 'technical', label: '⚡ Technical', color: 'bg-[#8E44FF] text-white' },
             { id: 'cultural', label: '🎭 Cultural', color: 'bg-[#E91E63] text-white' },
             { id: 'sports', label: '🏆 Sports', color: 'bg-[#16A34A] text-white' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleCategoryChange(tab.id)}
-              className={`px-4 py-2 rounded-2xl text-xs sm:text-sm font-black transition-all ${
-                category === tab.id
-                  ? `${tab.color} fest-shadow-sm`
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          ].map((tab) => {
+            const isSelected = category === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleCategoryChange(tab.id)}
+                className={`relative isolate px-4 py-2 rounded-2xl text-xs sm:text-sm font-black transition-colors cursor-pointer select-none ${
+                  isSelected ? '' : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                }`}
+              >
+                {isSelected && (
+                  <motion.span
+                    layoutId="events-category-capsule"
+                    className={`absolute inset-0 ${tab.color.split(' ')[0]} rounded-2xl z-0 fest-shadow-sm`}
+                    transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                  />
+                )}
+                <span className={`relative z-10 transition-colors ${isSelected ? 'text-white' : 'text-stone-700'}`}>
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Search Input & Secondary Filters */}

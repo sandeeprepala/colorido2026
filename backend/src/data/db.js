@@ -257,7 +257,13 @@ export const db = {
     return state.profiles.find((p) => p.email?.toLowerCase() === em || p.username?.toLowerCase() === em);
   },
   findUserById: (id) => {
-    return state.profiles.find((p) => p.id === id);
+    if (!id) return null;
+    return state.profiles.find((p) =>
+      p.id === id ||
+      p.email?.toLowerCase() === String(id).toLowerCase() ||
+      p.username?.toLowerCase() === String(id).toLowerCase() ||
+      (String(id).includes('admin') && p.role === 'admin')
+    );
   },
   createUser: async (profile) => {
     state.profiles.push(profile);

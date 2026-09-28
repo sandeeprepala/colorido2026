@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, MapPin, Trophy, Sparkles, Filter, ArrowUpRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { eventsAPI } from '../services/api';
 
 export default function SchedulePage() {
@@ -90,20 +91,28 @@ export default function SchedulePage() {
           <span className="text-xs font-black uppercase tracking-wider text-stone-600">Filter Category:</span>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-bold">
-          {['all', 'technical', 'cultural', 'sports'].map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCategoryFilter(cat)}
-              className={`px-3.5 py-1.5 rounded-xl capitalize transition-all ${
-                categoryFilter === cat
-                  ? 'bg-[#121217] text-white font-black'
-                  : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        <div className="flex items-center gap-1.5 text-xs font-bold relative">
+          {['all', 'technical', 'cultural', 'sports'].map((cat) => {
+            const isSelected = categoryFilter === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                className="relative isolate px-3.5 py-1.5 rounded-xl capitalize transition-colors cursor-pointer select-none"
+              >
+                {isSelected && (
+                  <motion.span
+                    layoutId="schedule-category-capsule"
+                    className="absolute inset-0 bg-[#121217] rounded-xl z-0 shadow-xs"
+                    transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                  />
+                )}
+                <span className={`relative z-10 transition-colors ${isSelected ? 'text-white font-black' : 'text-stone-700 hover:text-black'}`}>
+                  {cat}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 

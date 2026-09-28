@@ -111,26 +111,43 @@ export const createEvent = async (req, res) => {
       rounds,
     } = req.body;
 
-    if (!name || !category || !venue || !event_date || !start_time || !end_time) {
-      return res.status(400).json({ error: 'Event name, category, venue, date, and times are required.' });
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Event name is required.' });
     }
+
+    const cleanCategory = (category || 'technical').trim().toLowerCase();
+    const cleanVenue = (venue && venue.trim()) || 'Main Campus Arena';
+    const cleanDate = event_date || '2026-10-18';
+    const cleanStart = start_time || '10:00 AM';
+    const cleanEnd = end_time || '04:00 PM';
 
     const minTeam = Math.max(1, Number(min_team_size) || 1);
     const maxTeam = Math.max(minTeam, Number(max_team_size) || minTeam);
 
+    let parsedRounds = [];
+    if (Array.isArray(rounds)) {
+      parsedRounds = rounds;
+    } else if (typeof rounds === 'string') {
+      try {
+        parsedRounds = JSON.parse(rounds);
+      } catch (e) {
+        parsedRounds = [];
+      }
+    }
+
     const newEvent = {
       id: 'evt-' + Date.now().toString(36),
       name: name.trim(),
-      category: category.toLowerCase(),
-      description: description || '',
+      category: cleanCategory,
+      description: description?.trim() || `${name.trim()} tournament and competition at COLORIDO '26.`,
       image_url: image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1000&q=80',
-      venue: venue.trim(),
-      event_date,
-      start_time,
-      end_time,
-      registration_deadline: registration_deadline || event_date,
+      venue: cleanVenue,
+      event_date: cleanDate,
+      start_time: cleanStart,
+      end_time: cleanEnd,
+      registration_deadline: registration_deadline || cleanDate,
       max_participants: Number(max_participants) || 100,
-      prize_pool: prize_pool || 'Trophies & Certificates',
+      prize_pool: prize_pool || '₹25,000',
       prize_1st: prize_1st || '',
       prize_2nd: prize_2nd || '',
       prize_3rd: prize_3rd || '',
@@ -139,18 +156,19 @@ export const createEvent = async (req, res) => {
       eligibility: eligibility || 'Open to all registered students',
       rules: rules || 'Festival guidelines apply',
       judging_criteria: judging_criteria || 'Jury decision will be final',
-      contact_name: contact_name || 'Event Coordinator',
+      contact_name: contact_name || 'Dr. Anita Roy',
       contact_email: contact_email || 'events@colorido.fest',
-      contact_phone: contact_phone || '+91 99999 00000',
-      rounds: Array.isArray(rounds) ? rounds : [],
+      contact_phone: contact_phone || '+91 98765 43210',
+      rounds: parsedRounds,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
     await db.createEvent(newEvent);
+    broadcastRealtime('EVENT_CREATED', newEvent);
 
     // If it's a sports event, automatically create its corresponding sports leaderboard
-    if (newEvent.category.toLowerCase() === 'sports') {
+    if (cleanCategory === 'sports') {
       const newLb = {
         id: 'lb-' + newEvent.id.replace(/^evt-/, ''),
         event_id: newEvent.id,
@@ -167,7 +185,7 @@ export const createEvent = async (req, res) => {
     return res.status(201).json({ message: 'Event created successfully!', event: newEvent });
   } catch (err) {
     console.error('createEvent error:', err);
-    return res.status(500).json({ error: 'Failed to create event.' });
+    return res.status(500).json({ error: err.message || 'Failed to create event.' });
   }
 };
 

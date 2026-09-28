@@ -8,6 +8,7 @@ import CountdownTimer from '../components/common/CountdownTimer';
 import CategoryCard from '../components/common/CategoryCard';
 import EventCard from '../components/common/EventCard';
 import { eventsAPI, leaderboardAPI, discussionAPI } from '../services/api';
+import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function HomePage() {
@@ -258,6 +259,7 @@ export default function HomePage() {
           </div>
 
           {/* Filter Pills */}
+<<<<<<< HEAD
           <div className="flex items-center gap-1.5 bg-white p-1 rounded-2xl border-2 border-[#121217] fest-shadow-sm text-xs font-bold">
             {['all', 'technical', 'cultural', 'sports'].map((cat) => (
               <button
@@ -271,6 +273,30 @@ export default function HomePage() {
                 {cat}
               </button>
             ))}
+=======
+          <div className="flex items-center gap-1.5 bg-white p-1 rounded-2xl border-2 border-[#121217] fest-shadow-sm text-xs font-bold relative">
+            {['all', 'technical', 'cultural', 'sports'].map((cat) => {
+              const isSelected = featuredCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setFeaturedCategory(cat)}
+                  className="relative isolate px-3.5 py-1.5 rounded-xl capitalize transition-colors cursor-pointer select-none"
+                >
+                  {isSelected && (
+                    <motion.span
+                      layoutId="home-featured-capsule"
+                      className="absolute inset-0 bg-[#121217] rounded-xl z-0 shadow-xs"
+                      transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                    />
+                  )}
+                  <span className={`relative z-10 transition-colors ${isSelected ? 'text-white' : 'text-stone-700 hover:text-black'}`}>
+                    {cat}
+                  </span>
+                </button>
+              );
+            })}
+>>>>>>> e6e81c52e9fe924d8f901133bc6ec437ea4f9492
           </div>
         </div>
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Flame, Activity, Shield, Users, Radio, RefreshCw } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { leaderboardAPI } from '../services/api';
 import { useRealtime } from '../hooks/useRealtime';
 
@@ -80,23 +81,30 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Sport Selector Tabs */}
-      <div className="flex flex-wrap items-center justify-center gap-2.5">
+      <div className="flex flex-wrap items-center justify-center gap-2.5 relative">
         {leaderboards.map((b) => {
           const isSelected = activeBoard?.id === b.id;
           return (
             <button
               key={b.id}
               onClick={() => setActiveBoardId(b.id)}
-              className={`px-4 sm:px-5 py-2.5 rounded-2xl font-black text-xs sm:text-sm border-2 transition-all flex items-center gap-2 ${
-                isSelected
-                  ? 'bg-[#121217] text-white border-[#121217] fest-shadow-sm'
-                  : 'bg-white text-stone-800 border-stone-300 hover:border-[#121217]'
+              className={`relative isolate px-4 sm:px-5 py-2.5 rounded-2xl font-black text-xs sm:text-sm border-2 border-[#121217] transition-colors flex items-center gap-2 cursor-pointer select-none ${
+                isSelected ? '' : 'bg-white hover:bg-stone-50'
               }`}
             >
-              <Trophy className="w-4 h-4 text-[#FFD43B]" />
-              <span>{b.sport_name}</span>
+              {isSelected && (
+                <motion.span
+                  layoutId="leaderboard-sport-capsule"
+                  className="absolute inset-0 bg-[#121217] rounded-[14px] z-0 fest-shadow-sm"
+                  transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                />
+              )}
+              <Trophy className={`w-4 h-4 relative z-10 transition-colors ${isSelected ? 'text-[#FFD43B]' : 'text-stone-700'}`} />
+              <span className={`relative z-10 transition-colors ${isSelected ? 'text-white' : 'text-stone-800'}`}>
+                {b.sport_name}
+              </span>
               {b.status === 'LIVE' && (
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                <span className="relative z-10 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
               )}
             </button>
           );
