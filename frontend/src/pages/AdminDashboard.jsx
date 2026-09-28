@@ -279,20 +279,22 @@ export default function AdminDashboard() {
         notify(`New event "${eventFormData.name}" created!`);
       }
       setShowEventModal(false);
-      await fetchAllAdminData();
+      fetchAllAdminData();
 
       // If a sports event was created or updated, auto-select it in the Sports Leaderboard
       if (eventFormData.category?.toLowerCase() === 'sports') {
-        const lbRes = await leaderboardAPI.getAllLeaderboards();
-        const matched = lbRes.data.leaderboards?.find(
-          (lb) => lb.sport_name?.toLowerCase() === eventFormData.name?.toLowerCase()
-        );
-        if (matched) {
-          setSelectedLeaderboard(matched);
-        }
+        leaderboardAPI.getAllLeaderboards().then((lbRes) => {
+          const matched = lbRes.data.leaderboards?.find(
+            (lb) => lb.sport_name?.toLowerCase() === eventFormData.name?.toLowerCase()
+          );
+          if (matched) {
+            setSelectedLeaderboard(matched);
+          }
+        }).catch(() => {});
       }
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to save event');
+      const errMsg = err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to save event';
+      alert(errMsg);
     }
   };
 
