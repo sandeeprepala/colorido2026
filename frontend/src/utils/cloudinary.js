@@ -94,4 +94,19 @@ export function getOptimizedImageUrl(src, options = {}) {
   return `https://res.cloudinary.com/${cloudName}/image/upload/${transStr}/${publicId}`;
 }
 
+/**
+ * Gracefully fall back to local asset if Cloudinary CDN image is missing or not yet uploaded
+ */
+export function handleImageFallback(e, fallbackSrc) {
+  if (!e || !e.target) return;
+  const target = e.target;
+  const fallbackAbsolute = fallbackSrc.startsWith('/')
+    ? window.location.origin + fallbackSrc
+    : fallbackSrc;
+
+  if (target.src !== fallbackAbsolute && target.src !== fallbackSrc) {
+    target.src = fallbackSrc;
+  }
+}
+
 export default getOptimizedImageUrl;

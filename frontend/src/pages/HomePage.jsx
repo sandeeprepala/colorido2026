@@ -10,7 +10,7 @@ import EventCard from '../components/common/EventCard';
 import { eventsAPI, leaderboardAPI, discussionAPI } from '../services/api';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
-import { getOptimizedImageUrl } from '../utils/cloudinary';
+import { getOptimizedImageUrl, handleImageFallback } from '../utils/cloudinary';
 import PerspectiveGrid from '../components/common/PerspectiveGrid';
 
 export default function HomePage() {
@@ -160,6 +160,7 @@ export default function HomePage() {
                 <div className="relative rounded-3xl border-3 border-[#121217] bg-white p-3 fest-shadow-xl overflow-hidden rotate-1 hover:rotate-0 transition-transform duration-300">
                   <img
                     src={getOptimizedImageUrl('/assets/hero_art.jpg', { width: 900 })}
+                    onError={(e) => handleImageFallback(e, '/assets/hero_art.jpg')}
                     alt="COLORIDO '26 Festival Artwork Collage"
                     className="w-full h-auto rounded-2xl object-cover"
                   />
@@ -493,6 +494,7 @@ export default function HomePage() {
               <div className="h-44 sm:h-52 overflow-hidden bg-stone-100">
                 <img
                   src={getOptimizedImageUrl(item.img, { width: 600 })}
+                  onError={(e) => handleImageFallback(e, item.img)}
                   alt={item.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
@@ -556,6 +558,7 @@ export default function HomePage() {
               <div className="relative rounded-2xl border-3 border-[#121217] bg-white p-2 fest-shadow-xl overflow-hidden rotate-2 hover:rotate-0 transition-transform duration-300">
                 <img
                   src={getOptimizedImageUrl('/assets/crowd_art.jpg', { width: 900 })}
+                  onError={(e) => handleImageFallback(e, '/assets/crowd_art.jpg')}
                   alt="Students Celebrating at COLORIDO '26"
                   className="w-full h-auto object-cover rounded-xl"
                   loading="lazy"

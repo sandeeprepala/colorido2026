@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Maximize2, X, ChevronLeft, ChevronRight, Download, Eye, Camera, Film, Layers } from 'lucide-react';
-import { getOptimizedImageUrl } from '../utils/cloudinary';
+import { getOptimizedImageUrl, handleImageFallback } from '../utils/cloudinary';
 
 export default function GalleryPage() {
   const galleryItems = [
@@ -189,6 +189,7 @@ export default function GalleryPage() {
             <div className="relative h-64 sm:h-72 w-full overflow-hidden bg-stone-100 border-b-2 border-[#121217]">
               <img
                 src={getOptimizedImageUrl(item.img, { width: 800 })}
+                onError={(e) => handleImageFallback(e, item.img)}
                 alt={item.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 loading="lazy"
@@ -276,6 +277,7 @@ export default function GalleryPage() {
             <div className="relative flex-1 bg-stone-950 flex items-center justify-center overflow-hidden min-h-[300px] max-h-[60vh]">
               <img
                 src={getOptimizedImageUrl(activePhoto.img, { width: 1600 })}
+                onError={(e) => handleImageFallback(e, activePhoto.img)}
                 alt={activePhoto.title}
                 className="max-h-full max-w-full object-contain"
               />
