@@ -18,7 +18,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const user = await login(identifier.trim(), password);
-      if (user.role === 'admin') {
+      if (user.role === 'admin' || user.role === 'volunteer') {
         navigate('/admin');
       } else {
         navigate('/my-festival');
@@ -51,7 +51,7 @@ export default function LoginPage() {
             Festival Account Login
           </h2>
           <p className="text-xs font-semibold text-stone-500">
-            Sign in with your student or administrator credentials
+            Sign in with your student, volunteer, or administrator credentials
           </p>
         </div>
 
@@ -62,6 +62,10 @@ export default function LoginPage() {
           </p>
           <div className="flex justify-between items-center text-[11px]">
             <span>Student: <strong className="text-[#121217]">sandeep</strong></span>
+            <span>Password: <strong className="font-mono text-stone-800">colorido@2026</strong></span>
+          </div>
+          <div className="flex justify-between items-center text-[11px]">
+            <span>Volunteer: <strong className="text-[#0ea5e9]">volunteer</strong></span>
             <span>Password: <strong className="font-mono text-stone-800">colorido@2026</strong></span>
           </div>
           <div className="flex justify-between items-center text-[11px]">

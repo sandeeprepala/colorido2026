@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronDown, Ticket, User, LogOut, X } from 'lucide-react';
+import { ChevronDown, Ticket, User, LogOut, X, ShieldCheck } from 'lucide-react';
 
 const PROFILE_MORPH_STYLES = `
 :root {
@@ -158,7 +158,11 @@ export default function ProfileMorphMenu({ user, isAdmin, logout }) {
           >
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-black shrink-0 ${
-                isAdmin ? 'bg-[#8E44FF]' : 'bg-[#E91E63]'
+                user?.role === 'admin'
+                  ? 'bg-[#8E44FF]'
+                  : user?.role === 'volunteer'
+                  ? 'bg-[#19CFE8] text-[#121217]'
+                  : 'bg-[#E91E63]'
               }`}
             >
               {user?.name?.[0]?.toUpperCase() || 'U'}
@@ -175,7 +179,11 @@ export default function ProfileMorphMenu({ user, isAdmin, logout }) {
             <div className="flex items-start justify-between border-b border-stone-200 pb-2">
               <div className="min-w-0 pr-2">
                 <span className="text-[10px] text-stone-500 font-black uppercase tracking-wider block">
-                  {user?.role === 'admin' ? 'Admin Access' : 'Student Account'}
+                  {user?.role === 'admin'
+                    ? 'Admin Access'
+                    : user?.role === 'volunteer'
+                    ? 'Volunteer Access'
+                    : 'Student Account'}
                 </span>
                 <p className="font-bold text-xs text-[#121217] truncate">{user?.name}</p>
                 <p className="text-[10px] text-stone-400 truncate">{user?.email}</p>
@@ -195,7 +203,18 @@ export default function ProfileMorphMenu({ user, isAdmin, logout }) {
 
             {/* Menu Links */}
             <div className="py-1.5 space-y-1">
-              {!isAdmin && (
+              {(user?.role === 'admin' || user?.role === 'volunteer') && (
+                <Link
+                  to="/admin"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-bold text-stone-800 hover:bg-stone-100 rounded-xl transition-colors"
+                >
+                  <ShieldCheck className="w-4 h-4 text-[#8E44FF]" />
+                  {user?.role === 'volunteer' ? 'Volunteer Portal' : 'Admin Console'}
+                </Link>
+              )}
+
+              {user?.role !== 'admin' && (
                 <Link
                   to="/my-festival"
                   onClick={() => setOpen(false)}

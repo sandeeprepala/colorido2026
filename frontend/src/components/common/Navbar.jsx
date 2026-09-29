@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 import ProfileMorphMenu from './ProfileMorphMenu';
 
 export default function Navbar() {
-  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, isVolunteer, isStaff, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hoveredPath, setHoveredPath] = useState(null);
   const location = useLocation();
@@ -28,8 +28,13 @@ export default function Navbar() {
 
   // For Admin: remove Events, Stalls, Schedule, Leaderboard, Discussion
   const adminExcludedPaths = ['/events', '/stalls', '/schedule', '/leaderboard', '/discussion'];
+  // For Volunteer: keep only Home, Leaderboard, Discussion, About
+  const volunteerAllowedPaths = ['/', '/leaderboard', '/discussion', '/about'];
+
   const navLinks = isAdmin
     ? allNavLinks.filter((link) => !adminExcludedPaths.includes(link.path))
+    : isVolunteer
+    ? allNavLinks.filter((link) => volunteerAllowedPaths.includes(link.path))
     : allNavLinks;
 
   const isActive = (path) => {
@@ -74,7 +79,7 @@ export default function Navbar() {
                     to={link.path}
                     onMouseEnter={() => setHoveredPath(link.path)}
                     className={`relative isolate ${
-                      isAdmin ? 'px-5 py-2 text-sm' : 'px-3 xl:px-4 py-1.5 text-xs xl:text-sm'
+                      isAdmin || isVolunteer ? 'px-4 xl:px-5 py-2 text-sm' : 'px-3 xl:px-4 py-1.5 text-xs xl:text-sm'
                     } rounded-full font-black transition-colors duration-200 select-none flex items-center justify-center cursor-pointer`}
                   >
                     {/* Active sliding capsule */}
@@ -125,17 +130,19 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3 shrink-0">
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
-                {isAdmin && (
+                {isStaff && (
                   <Link
                     to="/admin"
                     className={`px-4 py-2 rounded-full font-black text-xs sm:text-sm border-2 border-[#121217] fest-shadow-sm flex items-center gap-1.5 transition-all hover:translate-x-0.5 hover:translate-y-0.5 ${
                       location.pathname.startsWith('/admin')
                         ? 'bg-[#121217] text-white'
+                        : isVolunteer
+                        ? 'bg-[#19CFE8] hover:bg-[#0ea5e9] text-[#121217]'
                         : 'bg-[#8E44FF] hover:bg-[#7b35e2] text-white'
                     }`}
                   >
                     <ShieldCheck className="w-4 h-4" />
-                    Dashboard
+                    {isVolunteer ? 'Volunteer Portal' : 'Dashboard'}
                   </Link>
                 )}
 
@@ -198,17 +205,19 @@ export default function Navbar() {
           <div className="pt-3 border-t border-stone-300 space-y-2">
             {isAuthenticated ? (
               <>
-                {isAdmin && (
+                {isStaff && (
                   <Link
                     to="/admin"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block w-full text-center py-2.5 rounded-xl font-black bg-[#8E44FF] text-white border-2 border-[#121217] fest-shadow-sm flex items-center justify-center gap-1.5"
+                    className={`block w-full text-center py-2.5 rounded-xl font-black border-2 border-[#121217] fest-shadow-sm flex items-center justify-center gap-1.5 ${
+                      isVolunteer ? 'bg-[#19CFE8] text-[#121217]' : 'bg-[#8E44FF] text-white'
+                    }`}
                   >
                     <ShieldCheck className="w-4 h-4" />
-                    Dashboard
+                    {isVolunteer ? 'Volunteer Portal' : 'Dashboard'}
                   </Link>
                 )}
-                {!isAdmin && (
+                {!isStaff && (
                   <Link
                     to="/my-festival"
                     onClick={() => setMobileMenuOpen(false)}

@@ -33,7 +33,7 @@ export async function runMigrationAndSeed() {
         department TEXT,
         year TEXT,
         student_id TEXT,
-        role TEXT DEFAULT 'student' CHECK (role IN ('student', 'admin')),
+        role TEXT DEFAULT 'student' CHECK (role IN ('student', 'admin', 'volunteer')),
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
 
@@ -225,12 +225,34 @@ export async function runMigrationAndSeed() {
         email = EXCLUDED.email;
     `, [studentPassHash]);
 
-    // Remove any dummy test profiles except admin and sandeep
+    // Upsert Volunteer
+    const volunteerPassHash = bcrypt.hashSync('colorido@2026', 10);
     await client.query(`
-      DELETE FROM profiles WHERE username NOT IN ('admin', 'sandeep');
+      INSERT INTO profiles (id, username, name, email, password, role, college, department, year, phone)
+      VALUES (
+        'user-volunteer-01',
+        'volunteer',
+        'Festival Volunteer',
+        'volunteer@colorido.fest',
+        $1,
+        'volunteer',
+        'Apex Institute of Technology',
+        'Event Operations Team',
+        'Staff',
+        '+91 98765 12345'
+      )
+      ON CONFLICT (username) DO UPDATE SET
+        password = EXCLUDED.password,
+        role = 'volunteer',
+        email = EXCLUDED.email;
+    `, [volunteerPassHash]);
+
+    // Remove any dummy test profiles except admin, sandeep, and volunteer
+    await client.query(`
+      DELETE FROM profiles WHERE username NOT IN ('admin', 'sandeep', 'volunteer');
     `);
 
-    console.log('[PostgreSQL] Exactly 1 Admin ("admin") and 1 Student ("sandeep") configured with password "colorido@2026".');
+    console.log('[PostgreSQL] Exactly 1 Admin ("admin"), 1 Volunteer ("volunteer") and 1 Student ("sandeep") configured with password "colorido@2026".');
 
     // 3. Populate all events
     for (const evt of initialEvents) {

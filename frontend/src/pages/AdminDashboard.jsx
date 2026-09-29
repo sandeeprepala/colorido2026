@@ -22,10 +22,11 @@ import FestivalStallLots from '../components/stalls/admin/FestivalStallLots';
 import StallAdminSidebar from '../components/stalls/admin/StallAdminSidebar';
 
 export default function AdminDashboard() {
-  const { user, isAdmin, isAuthenticated } = useAuth();
+  const { user, isAdmin, isVolunteer, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState('overview'); // overview, events, stalls, registrations, leaderboard, certificates, email, discussion
+  const isCurrentVolunteer = user?.role === 'volunteer';
+  const [activeTab, setActiveTab] = useState(isCurrentVolunteer ? 'events' : 'overview'); // overview, events, stalls, registrations, leaderboard, certificates, email, discussion
   const [hoveredAdminTab, setHoveredAdminTab] = useState(null);
   const [stallSection, setStallSection] = useState('food'); // food, game, applications, all-lots, view-all
   const [isStallSidebarOpen, setIsStallSidebarOpen] = useState(true);
@@ -92,36 +93,43 @@ export default function AdminDashboard() {
   const [regStatusFilter, setRegStatusFilter] = useState('all');
   const [regSearch, setRegSearch] = useState('');
 
+  // Safeguard: Ensure volunteer can never view overview, stalls, or discussion
+  useEffect(() => {
+    if (user?.role === 'volunteer' && (activeTab === 'overview' || activeTab === 'stalls' || activeTab === 'discussion')) {
+      setActiveTab('events');
+    }
+  }, [user?.role, activeTab]);
+
   const fetchAllAdminData = async () => {
     setLoading(true);
+    const isVol = user?.role === 'volunteer';
     try {
       const [
         statsRes, eventsRes, stallsRes, appsRes, 
         regsRes, lbRes, emailsRes, discRes, certsRes
       ] = await Promise.all([
-        adminAPI.getStats(),
-        eventsAPI.getEvents(),
-        stallsAPI.getStalls(),
-        stallsAPI.getAdminApplications(),
-        registrationsAPI.getAdminRegistrations(),
-        leaderboardAPI.getAllLeaderboards(),
-        emailAPI.getEmailLogs(),
-        discussionAPI.getDiscussion(),
+        !isVol ? adminAPI.getStats().catch(() => ({ data: { stats: null } })) : Promise.resolve({ data: { stats: null } }),
+        eventsAPI.getEvents().catch(() => ({ data: { events: [] } })),
+        !isVol ? stallsAPI.getStalls().catch(() => ({ data: { stalls: [] } })) : Promise.resolve({ data: { stalls: [] } }),
+        !isVol ? stallsAPI.getAdminApplications().catch(() => ({ data: { applications: [] } })) : Promise.resolve({ data: { applications: [] } }),
+        registrationsAPI.getAdminRegistrations().catch(() => ({ data: { registrations: [] } })),
+        leaderboardAPI.getAllLeaderboards().catch(() => ({ data: { leaderboards: [] } })),
+        emailAPI.getEmailLogs().catch(() => ({ data: { logs: [] } })),
+        !isVol ? discussionAPI.getDiscussion().catch(() => ({ data: { messages: [] } })) : Promise.resolve({ data: { messages: [] } }),
         certificatesAPI.getAdminCertificates().catch(() => ({ data: { certificates: [] } })),
       ]);
 
-      setStats(statsRes.data.stats);
-      setEvents(eventsRes.data.events || []);
-      setStalls(stallsRes.data.stalls || []);
-      setStallApps(appsRes.data.applications || []);
-      setRegistrations(regsRes.data.registrations || []);
-      setLeaderboards(lbRes.data.leaderboards || []);
-      setCertificates(certsRes.data.certificates || []);
-      setEmailLogs(emailsRes.data.logs || []);
-      setDiscussions(discRes.data.messages || []);
+      if (statsRes.data?.stats) setStats(statsRes.data.stats);
+      setEvents(eventsRes.data?.events || []);
+      setStalls(stallsRes.data?.stalls || []);
+      setStallApps(appsRes.data?.applications || []);
+      setRegistrations(regsRes.data?.registrations || []);
+      setLeaderboards(lbRes.data?.leaderboards || []);
+      setCertificates(certsRes.data?.certificates || []);
+      setEmailLogs(emailsRes.data?.logs || []);
+      setDiscussions(discRes.data?.messages || []);
 
-      const fetchedLbs = lbRes.data.leaderboards || [];
-      setLeaderboards(fetchedLbs);
+      const fetchedLbs = lbRes.data?.leaderboards || [];
       if (fetchedLbs.length > 0) {
         if (!selectedLeaderboard) {
           setSelectedLeaderboard(fetchedLbs[0]);
@@ -135,7 +143,7 @@ export default function AdminDashboard() {
         }
       }
 
-      if (eventsRes.data.events?.length > 0 && !certTargetEvent) {
+      if (eventsRes.data?.events?.length > 0 && !certTargetEvent) {
         setCertTargetEvent(eventsRes.data.events[0].id);
       }
     } catch (err) {
@@ -150,12 +158,12 @@ export default function AdminDashboard() {
       navigate('/login');
       return;
     }
-    if (!isAdmin) {
+    if (!isAdmin && user?.role !== 'volunteer') {
       navigate('/my-festival');
       return;
     }
     fetchAllAdminData();
-  }, [isAuthenticated, isAdmin]);
+  }, [isAuthenticated, isAdmin, user?.role]);
 
   // Realtime updates
   useRealtime({
@@ -511,18 +519,20 @@ export default function AdminDashboard() {
       <div className="bg-white border-3 border-[#121217] rounded-3xl p-6 sm:p-8 fest-shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="p-2 rounded-xl bg-[#8E44FF] text-white fest-shadow-sm">
+            <span className={`p-2 rounded-xl text-white fest-shadow-sm ${user?.role === 'volunteer' ? 'bg-[#19CFE8] text-[#121217]' : 'bg-[#8E44FF]'}`}>
               <ShieldCheck className="w-5 h-5" />
             </span>
-            <span className="text-xs font-black uppercase tracking-wider text-[#8E44FF]">
-              FESTIVAL CONTROL CONSOLE
+            <span className={`text-xs font-black uppercase tracking-wider ${user?.role === 'volunteer' ? 'text-[#0284c7]' : 'text-[#8E44FF]'}`}>
+              {user?.role === 'volunteer' ? 'VOLUNTEER OPERATIONS PORTAL' : 'FESTIVAL CONTROL CONSOLE'}
             </span>
           </div>
           <h1 className="font-display font-black text-3xl sm:text-4xl text-[#121217] tracking-tight">
-            ADMIN DASHBOARD
+            {user?.role === 'volunteer' ? 'VOLUNTEER DASHBOARD' : 'ADMIN DASHBOARD'}
           </h1>
           <p className="text-xs font-semibold text-stone-500 mt-1">
-            COLORIDO '26 Management · Superuser: {user?.name}
+            {user?.role === 'volunteer'
+              ? `COLORIDO '26 Operations · Volunteer: ${user?.name} (Events, Registrations, Leaderboards, Certificates & Email)`
+              : `COLORIDO '26 Management · Superuser: ${user?.name}`}
           </p>
         </div>
 
@@ -530,14 +540,14 @@ export default function AdminDashboard() {
         <div className="flex flex-wrap items-center gap-2.5">
           <button
             onClick={() => handleOpenCreateEvent('technical')}
-            className="bg-[#121217] hover:bg-[#E91E63] text-white px-4 py-2.5 rounded-full text-xs font-black border-2 border-[#121217] fest-shadow-sm flex items-center gap-1.5 transition-all"
+            className="bg-[#121217] hover:bg-[#E91E63] text-white px-4 py-2.5 rounded-full text-xs font-black border-2 border-[#121217] fest-shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             CREATE EVENT
           </button>
           <button
             onClick={() => setActiveTab('email')}
-            className="bg-[#FF7A00] hover:bg-[#e06c00] text-white px-4 py-2.5 rounded-full text-xs font-black border-2 border-[#121217] fest-shadow-sm flex items-center gap-1.5 transition-all"
+            className="bg-[#FF7A00] hover:bg-[#e06c00] text-white px-4 py-2.5 rounded-full text-xs font-black border-2 border-[#121217] fest-shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
           >
             <Mail className="w-4 h-4" />
             SEND EMAIL
@@ -545,7 +555,7 @@ export default function AdminDashboard() {
           <button
             onClick={fetchAllAdminData}
             title="Refresh All Data"
-            className="p-2.5 rounded-full border-2 border-[#121217] bg-stone-100 hover:bg-stone-200 transition-colors"
+            className="p-2.5 rounded-full border-2 border-[#121217] bg-stone-100 hover:bg-stone-200 transition-colors cursor-pointer"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -566,15 +576,17 @@ export default function AdminDashboard() {
         className="flex flex-wrap lg:flex-nowrap items-center gap-1.5 sm:gap-2 bg-white p-2 rounded-2xl border-2 border-[#121217] fest-shadow-sm text-xs font-black overflow-x-auto no-scrollbar relative"
       >
         {[
-          { id: 'overview', label: '📊 Overview' },
+          { id: 'overview', label: '📊 Overview', adminOnly: true },
           { id: 'events', label: `🎪 Events (${events.length})` },
-          { id: 'stalls', label: `🍔 Stalls (${stalls.length})` },
+          { id: 'stalls', label: `🍔 Stalls (${stalls.length})`, adminOnly: true },
           { id: 'registrations', label: `🎟️ Registrations (${registrations.length})` },
           { id: 'leaderboard', label: '🏆 Sports Leaderboard' },
           { id: 'certificates', label: `📜 Certificates (${certificates.length})` },
           { id: 'email', label: '✉️ Email Broadcast' },
-          { id: 'discussion', label: `💬 Discussion (${discussions.length})` },
-        ].map((tab) => {
+          { id: 'discussion', label: `💬 Discussion (${discussions.length})`, adminOnly: true },
+        ]
+          .filter((tab) => user?.role === 'admin' || !tab.adminOnly)
+          .map((tab) => {
           const isActive = activeTab === tab.id;
           const isHovered = hoveredAdminTab === tab.id;
           return (
@@ -624,9 +636,9 @@ export default function AdminDashboard() {
       </div>
 
       {/* ======================================================== */}
-      {/* TAB 1: OVERVIEW & KEY METRICS */}
+      {/* TAB 1: OVERVIEW & KEY METRICS (Admin Only) */}
       {/* ======================================================== */}
-      {activeTab === 'overview' && (
+      {activeTab === 'overview' && user?.role === 'admin' && (
         <div className="space-y-8">
           
           {/* System & Database Infrastructure Status */}
@@ -904,9 +916,9 @@ export default function AdminDashboard() {
       )}
 
       {/* ======================================================== */}
-      {/* TAB 3: STALL MANAGEMENT */}
+      {/* TAB 3: STALL MANAGEMENT (Admin Only) */}
       {/* ======================================================== */}
-      {activeTab === 'stalls' && (
+      {activeTab === 'stalls' && user?.role === 'admin' && (
         <div className="space-y-6">
           
           {/* Header with Title and Sidebar Toggle */}
@@ -1665,9 +1677,9 @@ export default function AdminDashboard() {
       )}
 
       {/* ======================================================== */}
-      {/* TAB 8: DISCUSSION MODERATION */}
+      {/* TAB 8: DISCUSSION MODERATION (Admin Only) */}
       {/* ======================================================== */}
-      {activeTab === 'discussion' && (
+      {activeTab === 'discussion' && user?.role === 'admin' && (
         <div className="space-y-6">
           <div>
             <h2 className="font-display font-black text-2xl text-[#121217]">

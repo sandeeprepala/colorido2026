@@ -16,6 +16,18 @@ export const initialProfiles = [
     created_at: new Date('2026-09-01T10:00:00Z').toISOString(),
   },
   {
+    id: 'user-volunteer-01',
+    name: 'Festival Volunteer',
+    email: 'volunteer@colorido.fest',
+    password: hashPassword('colorido@2026'),
+    phone: '+91 98765 12345',
+    college: 'Apex Institute of Technology',
+    department: 'Event Operations Team',
+    year: 'Staff',
+    role: 'volunteer',
+    created_at: new Date('2026-09-02T10:00:00Z').toISOString(),
+  },
+  {
     id: 'user-student-01',
     name: 'Sandeep Sharma',
     email: 'sandeep@college.edu',

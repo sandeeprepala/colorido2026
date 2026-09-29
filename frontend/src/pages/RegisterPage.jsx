@@ -17,6 +17,7 @@ export default function RegisterPage() {
     department: 'Computer Science',
     year: '2nd Year',
     student_id: '',
+    role: 'student',
   });
 
   const [loading, setLoading] = useState(false);
@@ -28,8 +29,12 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register(formData);
-      navigate('/my-festival');
+      const user = await register(formData);
+      if (user.role === 'volunteer') {
+        navigate('/admin');
+      } else {
+        navigate('/my-festival');
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed. Please check your details.');
     } finally {
@@ -55,11 +60,35 @@ export default function RegisterPage() {
             <span className="text-base bg-[#121217] text-white px-2 py-0.5 rounded ml-1">'26</span>
           </span>
           <h2 className="font-display font-black text-2xl text-[#121217] tracking-tight">
-            Create Student Festival Account
+            {formData.role === 'volunteer' ? 'Join Festival Volunteer Team' : 'Create Student Festival Account'}
           </h2>
           <p className="text-xs font-semibold text-stone-500">
-            Join competitions, reserve carnival stalls, and get your digital QR passes
+            {formData.role === 'volunteer'
+              ? 'Coordinate events, review registrations, generate certificates, and broadcast updates'
+              : 'Join competitions, reserve carnival stalls, and get your digital QR passes'}
           </p>
+        </div>
+
+        {/* Account Role Selector */}
+        <div className="flex bg-stone-100 p-1.5 rounded-2xl border-2 border-[#121217]">
+          <button
+            type="button"
+            onClick={() => setFormData({ ...formData, role: 'student' })}
+            className={`flex-1 py-2 text-xs font-black rounded-xl transition-all cursor-pointer ${
+              formData.role === 'student' ? 'bg-[#121217] text-white fest-shadow-sm' : 'text-stone-600 hover:text-black'
+            }`}
+          >
+            🎓 Student Participant
+          </button>
+          <button
+            type="button"
+            onClick={() => setFormData({ ...formData, role: 'volunteer' })}
+            className={`flex-1 py-2 text-xs font-black rounded-xl transition-all cursor-pointer ${
+              formData.role === 'volunteer' ? 'bg-[#19CFE8] text-[#121217] fest-shadow-sm font-black' : 'text-stone-600 hover:text-black'
+            }`}
+          >
+            🤝 Festival Volunteer
+          </button>
         </div>
 
         {error && (

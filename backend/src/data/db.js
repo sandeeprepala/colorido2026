@@ -30,6 +30,17 @@ let state = {
       created_at: '2026-01-01T00:00:00.000Z',
     },
     {
+      id: 'usr-volunteer-initial',
+      username: 'volunteer',
+      name: 'Festival Volunteer',
+      email: 'volunteer@colorido.fest',
+      password: bcrypt.hashSync('colorido@2026', 10),
+      role: 'volunteer',
+      college: 'Apex Institute of Technology',
+      department: 'Event Operations Team',
+      created_at: '2026-01-01T00:00:00.000Z',
+    },
+    {
       id: 'usr-sandeep-initial',
       username: 'sandeep',
       name: 'Sandeep Repala',
@@ -82,6 +93,35 @@ export const syncFromPostgres = async () => {
 
     if (profilesRes.rows.length > 0) {
       state.profiles = profilesRes.rows;
+    }
+
+    // Ensure Postgres profiles_role_check constraint includes 'volunteer' and seed volunteer
+    try {
+      await pool.query(`ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_role_check;`);
+      await pool.query(`ALTER TABLE profiles ADD CONSTRAINT profiles_role_check CHECK (role IN ('student', 'admin', 'volunteer'));`);
+      const volHash = bcrypt.hashSync('colorido@2026', 10);
+      await pool.query(`
+        INSERT INTO profiles (id, username, name, email, password, role, college, department)
+        VALUES ('usr-volunteer-01', 'volunteer', 'Festival Volunteer', 'volunteer@colorido.fest', $1, 'volunteer', 'Apex Institute of Technology', 'Event Operations Team')
+        ON CONFLICT (username) DO UPDATE SET role = 'volunteer';
+      `, [volHash]);
+      const updatedProfiles = await pool.query('SELECT * FROM profiles');
+      state.profiles = updatedProfiles.rows;
+    } catch (e) {
+      // In-memory volunteer profile fallback is always ready in state.profiles
+      if (!state.profiles.some((p) => p.username === 'volunteer' || p.role === 'volunteer')) {
+        state.profiles.push({
+          id: 'usr-volunteer-initial',
+          username: 'volunteer',
+          name: 'Festival Volunteer',
+          email: 'volunteer@colorido.fest',
+          password: bcrypt.hashSync('colorido@2026', 10),
+          role: 'volunteer',
+          college: 'Apex Institute of Technology',
+          department: 'Event Operations Team',
+          created_at: '2026-01-01T00:00:00.000Z',
+        });
+      }
     }
     state.events = eventsRes.rows.map((e) => ({
       ...e,

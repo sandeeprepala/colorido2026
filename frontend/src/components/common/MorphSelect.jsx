@@ -3,29 +3,27 @@ import { ChevronDown, Check } from 'lucide-react';
 
 /**
  * MorphSelect Component
- * Elegant morphing dropdown selector using the Transitions.dev spring curve
+ * Neo-brutalist styled select dropdown with floating options list and smooth interactions
  * 
  * @param {Array<{value: string, label: string, icon?: React.ReactNode}>} options
  * @param {string} value
  * @param {Function} onChange
  * @param {string} placeholder
+ * @param {string} className
+ * @param {boolean} disabled
  */
 export function MorphSelect({
   options = [],
   value,
   onChange,
   placeholder = "Select an option",
-  width = 220,
-  maxHeight = 240,
   className = "",
+  disabled = false,
 }) {
   const ref = useRef(null);
   const [open, setOpen] = useState(false);
 
-  const selectedOption = options.find((opt) => opt.value === value) || {
-    label: placeholder,
-    value: '',
-  };
+  const selectedOption = options.find((opt) => opt.value === value) || (value ? { label: value, value } : null);
 
   useEffect(() => {
     if (!open) return;
@@ -35,86 +33,87 @@ export function MorphSelect({
     const onKey = (e) => {
       if (e.key === 'Escape') setOpen(false);
     };
-    document.addEventListener('click', onDown);
+    document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('click', onDown);
+      document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onKey);
     };
   }, [open]);
 
-  const targetHeight = Math.min(maxHeight, 44 + options.length * 38);
-
-  const styleObj = {
-    '--morph-target-w': typeof width === 'number' ? `${width}px` : width,
-    '--morph-target-h': `${targetHeight}px`,
-    '--morph-closed-w': '100%',
-    '--morph-closed-h': '42px',
-  };
-
   return (
     <div
       ref={ref}
-      className={`t-morph relative border-2 border-[#121217] bg-white fest-shadow-sm select-none ${className} ${
-        open ? 'z-50 fest-shadow-lg' : 'hover:bg-stone-50'
-      }`}
-      data-open={open ? 'true' : 'false'}
-      style={styleObj}
+      className={`relative w-full select-none ${open ? 'z-40' : 'z-10'} ${className}`}
     >
-      {/* Expanded Options Menu */}
-      <div className="t-morph-menu flex flex-col p-2 bg-white">
-        <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-stone-200 mb-1">
-          <span className="text-[11px] font-black uppercase tracking-wider text-stone-500">
-            {placeholder}
-          </span>
-          <span className="text-[10px] text-stone-400 font-bold">ESC to close</span>
-        </div>
-        <div className="overflow-y-auto space-y-1 flex-1 pr-1 custom-scrollbar">
+      {/* Trigger Button */}
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((prev) => !prev)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className={`w-full h-[42px] px-3.5 bg-stone-50 hover:bg-white border-2 border-[#121217] rounded-xl text-sm font-semibold flex items-center justify-between text-left transition-all cursor-pointer ${
+          open ? 'bg-white ring-2 ring-[#8E44FF]/25 border-[#8E44FF] fest-shadow-sm' : ''
+        } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      >
+        <span className={`truncate flex items-center gap-1.5 ${selectedOption ? 'text-[#121217] font-bold' : 'text-stone-400'}`}>
+          {selectedOption ? (
+            <>
+              {selectedOption.icon}
+              {selectedOption.label}
+            </>
+          ) : (
+            placeholder
+          )}
+        </span>
+        <ChevronDown
+          className={`w-4 h-4 text-stone-500 shrink-0 ml-2 transition-transform duration-200 ${
+            open ? 'rotate-180 text-[#8E44FF]' : ''
+          }`}
+        />
+      </button>
+
+      {/* Floating Dropdown Menu */}
+      {open && (
+        <div
+          role="listbox"
+          className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 bg-white border-2 border-[#121217] rounded-xl fest-shadow-lg overflow-hidden py-1.5 animate-in fade-in-0 zoom-in-95 duration-100 max-h-56 overflow-y-auto custom-scrollbar"
+        >
+          <div className="px-3 py-1 flex items-center justify-between border-b border-stone-100 mb-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-stone-400">
+              {placeholder}
+            </span>
+            <span className="text-[9px] text-stone-400 font-bold uppercase">ESC to close</span>
+          </div>
           {options.map((opt) => {
             const isSelected = opt.value === value;
             return (
               <button
                 key={opt.value}
                 type="button"
+                role="option"
+                aria-selected={isSelected}
                 onClick={() => {
                   onChange(opt.value);
                   setOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all text-left ${
+                className={`w-full flex items-center justify-between px-3 py-2 text-xs sm:text-sm font-bold transition-colors text-left cursor-pointer ${
                   isSelected
                     ? 'bg-[#121217] text-white'
-                    : 'text-stone-800 hover:bg-stone-100 hover:translate-x-0.5'
+                    : 'text-stone-700 hover:bg-purple-50 hover:text-[#8E44FF]'
                 }`}
               >
-                <span className="truncate flex items-center gap-1.5">
+                <span className="truncate flex items-center gap-2">
                   {opt.icon}
                   {opt.label}
                 </span>
-                {isSelected && <Check className="w-3.5 h-3.5 text-[#FFD43B]" />}
+                {isSelected && <Check className="w-3.5 h-3.5 text-[#FFD43B] shrink-0" />}
               </button>
             );
           })}
         </div>
-      </div>
-
-      {/* Closed State Trigger Button */}
-      <button
-        type="button"
-        className="t-morph-plus w-full h-full px-3 flex items-center justify-between text-xs sm:text-sm font-bold text-stone-800"
-        aria-expanded={open ? 'true' : 'false'}
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((v) => !v);
-        }}
-      >
-        <span className="truncate flex items-center gap-1.5 pr-2">
-          {selectedOption.icon}
-          {selectedOption.label}
-        </span>
-        <div className="t-morph-icon flex-shrink-0 text-stone-500">
-          <ChevronDown className="w-4 h-4" />
-        </div>
-      </button>
+      )}
     </div>
   );
 }

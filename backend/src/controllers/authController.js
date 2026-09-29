@@ -27,7 +27,7 @@ export const register = async (req, res) => {
       department: department || '',
       year: year || '1st Year',
       student_id: student_id || '',
-      role: 'student',
+      role: req.body.role === 'volunteer' ? 'volunteer' : 'student',
       created_at: new Date().toISOString(),
     };
 

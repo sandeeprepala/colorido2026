@@ -212,8 +212,8 @@ export const getRegistrationById = async (req, res) => {
       return res.status(404).json({ error: 'Registration not found.' });
     }
 
-    // Check authorization: must be the participant or admin
-    if (req.user.role !== 'admin' && reg.student_id !== req.user.id) {
+    // Check authorization: must be the participant, volunteer, or admin
+    if (req.user.role !== 'admin' && req.user.role !== 'volunteer' && reg.student_id !== req.user.id) {
       return res.status(403).json({ error: 'Unauthorized to view this registration.' });
     }
 

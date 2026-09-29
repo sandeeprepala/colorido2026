@@ -5,18 +5,35 @@ import { db } from '../data/db.js';
 let transporter = null;
 
 // Initialize Nodemailer if SMTP credentials are provided
-if (config.email.smtpHost && config.email.smtpUser && config.email.smtpPass) {
+if (config.email.smtpUser && config.email.smtpPass) {
   try {
-    transporter = nodemailer.createTransport({
-      host: config.email.smtpHost,
-      port: Number(config.email.smtpPort),
-      secure: Number(config.email.smtpPort) === 465,
-      auth: {
-        user: config.email.smtpUser,
-        pass: config.email.smtpPass,
-      },
+    const isGmail = (config.email.smtpHost || '').includes('gmail') || (config.email.smtpUser || '').includes('@gmail');
+    transporter = nodemailer.createTransport(
+      isGmail
+        ? {
+            service: 'gmail',
+            auth: {
+              user: config.email.smtpUser,
+              pass: config.email.smtpPass,
+            },
+          }
+        : {
+            host: config.email.smtpHost,
+            port: Number(config.email.smtpPort) || 587,
+            secure: Number(config.email.smtpPort) === 465,
+            auth: {
+              user: config.email.smtpUser,
+              pass: config.email.smtpPass,
+            },
+          }
+    );
+    transporter.verify((err) => {
+      if (err) {
+        console.warn('[EmailService] SMTP verification notice:', err.message);
+      } else {
+        console.log(`[EmailService] Live SMTP transporter active for ${config.email.smtpUser}`);
+      }
     });
-    console.log('[EmailService] SMTP transporter configured.');
   } catch (err) {
     console.warn('[EmailService] SMTP initialization failed:', err.message);
   }

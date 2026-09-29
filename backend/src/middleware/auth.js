@@ -31,6 +31,9 @@ export const requireAuth = (req, res, next) => {
     if (!user && (decoded.role === 'admin' || decoded.id?.includes('admin') || decoded.email?.includes('admin'))) {
       user = db.getAllUsers().find((u) => u.role === 'admin');
     }
+    if (!user && (decoded.role === 'volunteer' || decoded.id?.includes('volunteer') || decoded.email?.includes('volunteer'))) {
+      user = db.getAllUsers().find((u) => u.role === 'volunteer');
+    }
     if (!user) {
       return res.status(401).json({ error: 'User account not found.' });
     }
@@ -55,6 +58,15 @@ export const requireAdmin = (req, res, next) => {
   requireAuth(req, res, () => {
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Access denied: Admin privileges required.' });
+    }
+    next();
+  });
+};
+
+export const requireVolunteerOrAdmin = (req, res, next) => {
+  requireAuth(req, res, () => {
+    if (req.user.role !== 'admin' && req.user.role !== 'volunteer') {
+      return res.status(403).json({ error: 'Access denied: Volunteer or Admin privileges required.' });
     }
     next();
   });
