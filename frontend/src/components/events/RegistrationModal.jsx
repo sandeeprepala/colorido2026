@@ -5,6 +5,7 @@ import { X, CheckCircle2, AlertCircle, Plus, Trash2, Calendar, MapPin, Sparkles 
 import { registrationsAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import MorphSelect from '../common/MorphSelect';
+import APP_CONFIG from '../../config';
 
 export default function RegistrationModal({ event, onClose, onSuccess }) {
   const { user } = useAuth();
@@ -171,7 +172,7 @@ export default function RegistrationModal({ event, onClose, onSuccess }) {
               <div className="bg-[#FAF8F5] border-2 border-dashed border-[#121217] rounded-2xl p-5 my-5 max-w-sm mx-auto">
                 <div className="p-3 bg-white border-2 border-[#121217] rounded-xl fest-shadow-sm inline-block">
                   <QRCodeSVG
-                    value={`${window.location.origin}/registration/verify/${confirmedRegistration.qr_token}`}
+                    value={APP_CONFIG.getRegistrationVerifyUrl(confirmedRegistration.qr_token)}
                     size={160}
                     level="H"
                   />

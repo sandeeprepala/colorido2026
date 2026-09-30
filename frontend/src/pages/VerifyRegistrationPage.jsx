@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { CheckCircle2, XCircle, ShieldCheck, ArrowLeft, Check, AlertCircle } from 'lucide-react';
 import { registrationsAPI, volunteerAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { extractPassToken } from '../components/scanner/RealTimeQRScanner';
 
 export default function VerifyRegistrationPage() {
   const { token } = useParams();
@@ -22,7 +23,8 @@ export default function VerifyRegistrationPage() {
   useEffect(() => {
     const verify = async () => {
       try {
-        const res = await registrationsAPI.verifyQrToken(token);
+        const cleanToken = extractPassToken(token);
+        const res = await registrationsAPI.verifyQrToken(cleanToken);
         setData(res.data);
       } catch (err) {
         setError(err.response?.data?.error || 'Invalid or revoked festival pass token.');

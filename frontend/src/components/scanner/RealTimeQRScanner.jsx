@@ -68,17 +68,30 @@ const playSuccessChime = () => {
 };
 
 /**
- * Extract pass token or registration ID from raw QR text or full verification URL
+ * Extract pass token or registration ID from raw QR text or full verification URL (localhost or deployed)
  */
 export const extractPassToken = (rawText) => {
   if (!rawText) return '';
-  const text = String(rawText).trim();
+  let text = String(rawText).trim();
 
-  // Handle URL format: https://domain.com/registration/verify/TOKEN
+  // Strip outer quotes if any
+  if ((text.startsWith('"') && text.endsWith('"')) || (text.startsWith("'") && text.endsWith("'"))) {
+    text = text.slice(1, -1).trim();
+  }
+
+  // Handle URL format: http(s)://.../registration/verify/TOKEN (matches localhost, 127.0.0.1, or deployed link)
   if (text.includes('/registration/verify/')) {
     const parts = text.split('/registration/verify/');
     if (parts[1]) {
-      return decodeURIComponent(parts[1].split('?')[0].split('#')[0].trim());
+      return decodeURIComponent(parts[1].split('?')[0].split('#')[0].replace(/\/+$/, '').trim());
+    }
+  }
+
+  // Handle general verify format: .../verify/TOKEN
+  if (text.includes('/verify/')) {
+    const parts = text.split('/verify/');
+    if (parts[1]) {
+      return decodeURIComponent(parts[1].split('?')[0].split('#')[0].replace(/\/+$/, '').trim());
     }
   }
 
@@ -86,12 +99,30 @@ export const extractPassToken = (rawText) => {
   try {
     if (text.startsWith('http://') || text.startsWith('https://')) {
       const url = new URL(text);
-      const tokenParam = url.searchParams.get('token') || url.searchParams.get('id');
+      const tokenParam =
+        url.searchParams.get('token') ||
+        url.searchParams.get('id') ||
+        url.searchParams.get('registration_id') ||
+        url.searchParams.get('qr_token');
       if (tokenParam) return decodeURIComponent(tokenParam.trim());
+
+      const segments = url.pathname.split('/').filter(Boolean);
+      if (segments.length > 0) {
+        return decodeURIComponent(segments[segments.length - 1].trim());
+      }
     }
   } catch (e) {
     // Not a valid URL, treat as raw token
   }
+
+  // Handle JSON encoded QR
+  try {
+    if (text.startsWith('{') && text.endsWith('}')) {
+      const parsed = JSON.parse(text);
+      const val = parsed.qr_token || parsed.token || parsed.registration_id || parsed.id;
+      if (val) return String(val).trim();
+    }
+  } catch (e) {}
 
   return text;
 };
@@ -345,7 +376,8 @@ export default function RealTimeQRScanner({
 
   // Mark Attendance / Check In
   const triggerCheckIn = async (idOrToken, currentParticipant = participant) => {
-    const target = idOrToken || currentParticipant?.id || currentParticipant?.registration_id;
+    const rawTarget = idOrToken || currentParticipant?.id || currentParticipant?.registration_id;
+    const target = extractPassToken(rawTarget);
     if (!target) return;
 
     setMarkingAttendance(true);

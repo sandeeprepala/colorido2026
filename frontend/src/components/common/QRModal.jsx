@@ -1,11 +1,12 @@
 import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { X, CheckCircle2, Calendar, MapPin, ExternalLink, ShieldCheck, Download } from 'lucide-react';
+import APP_CONFIG from '../../config';
 
 export default function QRModal({ registration, event, onClose }) {
   if (!registration) return null;
 
-  const verifyUrl = `${window.location.origin}/registration/verify/${registration.qr_token}`;
+  const verifyUrl = APP_CONFIG.getRegistrationVerifyUrl(registration.qr_token);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">

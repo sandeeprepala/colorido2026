@@ -503,6 +503,60 @@ export const db = {
   getRegistrationByQrToken: (qrToken) => state.registrations.find((r) => r.qr_token === qrToken),
   getUserRegistrations: (userId) => state.registrations.filter((r) => r.student_id === userId),
   getEventRegistrations: (eventId) => state.registrations.filter((r) => r.event_id === eventId),
+  findRegistrationAsync: async (tokenOrId) => {
+    if (!tokenOrId) return null;
+    const clean = String(tokenOrId).trim();
+    const lower = clean.toLowerCase();
+
+    // 1. Check in-memory state
+    let found = state.registrations.find(
+      (r) =>
+        r.id === clean ||
+        r.registration_id === clean ||
+        r.qr_token === clean ||
+        r.id?.toLowerCase() === lower ||
+        r.registration_id?.toLowerCase() === lower ||
+        r.qr_token?.toLowerCase() === lower
+    );
+    if (found) return found;
+
+    // 2. Query Postgres Supabase directly
+    try {
+      const res = await pool.query(`
+        SELECT * FROM event_registrations 
+        WHERE id = $1 
+           OR registration_id = $1 
+           OR qr_token = $1 
+           OR LOWER(id) = $2 
+           OR LOWER(registration_id) = $2 
+           OR LOWER(qr_token) = $2
+        LIMIT 1
+      `, [clean, lower]);
+
+      if (res.rows.length > 0) {
+        const raw = res.rows[0];
+        const formatted = {
+          ...raw,
+          registration_data:
+            typeof raw.registration_data === 'string'
+              ? JSON.parse(raw.registration_data)
+              : (raw.registration_data || {}),
+        };
+
+        const existingIdx = state.registrations.findIndex((r) => r.id === formatted.id);
+        if (existingIdx !== -1) {
+          state.registrations[existingIdx] = formatted;
+        } else {
+          state.registrations.push(formatted);
+        }
+        return formatted;
+      }
+    } catch (err) {
+      console.error('[Database] findRegistrationAsync PG error:', err.message);
+    }
+
+    return null;
+  },
   createRegistration: async (r) => {
     state.registrations.push(r);
     try {
@@ -529,28 +583,52 @@ export const db = {
   },
   cancelRegistration: async (id) => {
     const idx = state.registrations.findIndex((r) => r.id === id || r.registration_id === id);
-    if (idx === -1) return null;
-    state.registrations[idx].status = 'cancelled';
+    if (idx !== -1) {
+      state.registrations[idx].status = 'cancelled';
+    }
     try {
-      await pool.query('UPDATE event_registrations SET status = $1 WHERE id = $2 OR registration_id = $2', ['cancelled', id]);
+      await pool.query('UPDATE event_registrations SET status = $1 WHERE id = $2 OR registration_id = $2 OR qr_token = $2', ['cancelled', id]);
     } catch (e) {
       console.error('[Database] Error cancelling registration in PG:', e.message);
     }
-    return state.registrations[idx];
+    return idx !== -1 ? state.registrations[idx] : null;
   },
   updateRegistrationStatus: async (id, status, extra = {}) => {
-    const idx = state.registrations.findIndex((r) => r.id === id || r.registration_id === id || r.qr_token === id);
-    if (idx === -1) return null;
-    state.registrations[idx].status = status;
-    if (extra.checkin_time) {
-      state.registrations[idx].checkin_time = extra.checkin_time;
+    let idx = state.registrations.findIndex((r) => r.id === id || r.registration_id === id || r.qr_token === id);
+    if (idx !== -1) {
+      state.registrations[idx].status = status;
+      if (extra.checkin_time) {
+        state.registrations[idx].checkin_time = extra.checkin_time;
+      }
     }
     try {
-      await pool.query('UPDATE event_registrations SET status = $1 WHERE id = $2 OR registration_id = $2 OR qr_token = $2', [status, id]);
+      const res = await pool.query(
+        'UPDATE event_registrations SET status = $1 WHERE id = $2 OR registration_id = $2 OR qr_token = $2 RETURNING *',
+        [status, id]
+      );
+      if (res.rows.length > 0) {
+        const raw = res.rows[0];
+        const formatted = {
+          ...raw,
+          registration_data:
+            typeof raw.registration_data === 'string'
+              ? JSON.parse(raw.registration_data)
+              : (raw.registration_data || {}),
+        };
+        if (extra.checkin_time) {
+          formatted.checkin_time = extra.checkin_time;
+        }
+        if (idx !== -1) {
+          state.registrations[idx] = formatted;
+        } else {
+          state.registrations.push(formatted);
+        }
+        return formatted;
+      }
     } catch (e) {
       console.error('[Database] Error updating registration status in PG:', e.message);
     }
-    return state.registrations[idx];
+    return idx !== -1 ? state.registrations[idx] : null;
   },
 
   // Stalls

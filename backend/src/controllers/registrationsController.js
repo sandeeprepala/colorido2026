@@ -236,11 +236,16 @@ export const verifyQrToken = async (req, res) => {
     }
 
     token = decodeURIComponent(token).trim();
+
+    // Clean token if full URL or redirect was scanned (e.g. from localhost:5173 or deployed link)
     if (token.includes('/registration/verify/')) {
       token = token.split('/registration/verify/')[1]?.split('?')[0]?.split('#')[0] || token;
+    } else if (token.includes('/verify/')) {
+      token = token.split('/verify/')[1]?.split('?')[0]?.split('#')[0] || token;
     }
+    token = token.replace(/^\/+|\/+$/g, '').trim();
 
-    // Lookup by qr_token, id, or registration_id (case-insensitive)
+    // 1. Lookup in-memory by qr_token, id, or registration_id (case-insensitive)
     let reg = db.getRegistrationByQrToken(token) || db.getRegistrationById(token);
     if (!reg) {
       const lower = token.toLowerCase();
@@ -250,6 +255,11 @@ export const verifyQrToken = async (req, res) => {
           r.registration_id?.toLowerCase() === lower ||
           r.id?.toLowerCase() === lower
       );
+    }
+
+    // 2. Fall back to direct Supabase PostgreSQL query (ensures entries registered on localhost are verified on deployed link)
+    if (!reg && db.findRegistrationAsync) {
+      reg = await db.findRegistrationAsync(token);
     }
 
     if (!reg) {
@@ -374,7 +384,10 @@ export const checkInAttendee = async (req, res) => {
     identifier = String(identifier).trim();
     if (identifier.includes('/registration/verify/')) {
       identifier = identifier.split('/registration/verify/')[1]?.split('?')[0]?.split('#')[0] || identifier;
+    } else if (identifier.includes('/verify/')) {
+      identifier = identifier.split('/verify/')[1]?.split('?')[0]?.split('#')[0] || identifier;
     }
+    identifier = identifier.replace(/^\/+|\/+$/g, '').trim();
 
     let reg = db.getRegistrationByQrToken(identifier) || db.getRegistrationById(identifier);
     if (!reg) {
@@ -385,6 +398,9 @@ export const checkInAttendee = async (req, res) => {
           r.registration_id?.toLowerCase() === lower ||
           r.id?.toLowerCase() === lower
       );
+    }
+    if (!reg && db.findRegistrationAsync) {
+      reg = await db.findRegistrationAsync(identifier);
     }
 
     if (!reg) {

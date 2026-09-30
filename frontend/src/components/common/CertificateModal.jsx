@@ -3,13 +3,14 @@ import { QRCodeSVG } from 'qrcode.react';
 import { X, Award, Download, Printer, ShieldCheck, Sparkles } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import APP_CONFIG from '../../config';
 
 export default function CertificateModal({ certificate, onClose }) {
   const certRef = useRef(null);
 
   if (!certificate) return null;
 
-  const verifyUrl = `${window.location.origin}/certificate/verify/${certificate.certificate_id}`;
+  const verifyUrl = APP_CONFIG.getCertificateVerifyUrl(certificate.certificate_id);
 
   const handleDownloadPDF = async () => {
     if (!certRef.current) return;
