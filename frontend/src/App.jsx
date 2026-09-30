@@ -27,6 +27,7 @@ import MyFestivalPage from './pages/MyFestivalPage';
 import CertificatesPage from './pages/CertificatesPage';
 import AdminDashboard from './pages/AdminDashboard';
 import VolunteerDashboard from './pages/VolunteerDashboard';
+import RealTimeScannerPage from './pages/RealTimeScannerPage';
 import VerifyRegistrationPage from './pages/VerifyRegistrationPage';
 import VerifyCertificatePage from './pages/VerifyCertificatePage';
 import RoleRoute from './components/common/RoleRoute';
@@ -88,6 +89,22 @@ export default function App() {
                 element={
                   <RoleRoute allowedRoles={['volunteer', 'admin']}>
                     <VolunteerDashboard />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/scanner"
+                element={
+                  <RoleRoute allowedRoles={['volunteer', 'admin']}>
+                    <RealTimeScannerPage />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/scan"
+                element={
+                  <RoleRoute allowedRoles={['volunteer', 'admin']}>
+                    <RealTimeScannerPage />
                   </RoleRoute>
                 }
               />

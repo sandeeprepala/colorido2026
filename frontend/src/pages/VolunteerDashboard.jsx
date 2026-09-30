@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { 
   QrCode, Users, Trophy, CheckCircle2, AlertCircle, Search, 
   RefreshCw, Check, ArrowRight, Clock, MapPin, Building,
-  ShieldAlert, Sparkles, Filter
+  ShieldAlert, Sparkles, Filter, ExternalLink, Maximize2
 } from 'lucide-react';
 import { registrationsAPI, volunteerAPI, eventsAPI, leaderboardAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useRealtime } from '../hooks/useRealtime';
+import RealTimeQRScanner from '../components/scanner/RealTimeQRScanner';
+import { Link } from 'react-router-dom';
 
 export default function VolunteerDashboard() {
   const { user } = useAuth();
@@ -303,204 +305,27 @@ export default function VolunteerDashboard() {
       {/* SECTION 1: QR CHECK-IN */}
       {/* ========================================================================= */}
       {activeTab === 'checkin' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left: Input Form */}
-          <div className="lg:col-span-5 space-y-4">
-            <div className="bg-white border-3 border-[#121217] rounded-3xl p-6 sm:p-7 fest-shadow space-y-5">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-[#E91E63] text-white flex items-center justify-center font-black">
-                  <QrCode className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="font-display font-black text-lg text-[#121217]">
-                    Gate Pass Scanner
-                  </h2>
-                  <p className="text-[11px] font-semibold text-stone-500">
-                    Paste pass token or enter Registration ID
-                  </p>
-                </div>
-              </div>
-
-              <form onSubmit={handleVerifyPass} className="space-y-3">
-                <div>
-                  <label className="block text-[11px] font-black uppercase tracking-wider text-stone-600 mb-1">
-                    Pass Token / Registration ID
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. COL-2026-ABCD or qr-..."
-                    value={checkinInput}
-                    onChange={(e) => setCheckinInput(e.target.value)}
-                    className="w-full px-4 py-3 bg-stone-50 border-2 border-[#121217] rounded-xl text-sm font-mono font-bold focus:outline-hidden focus:bg-white"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={verifying || !checkinInput.trim()}
-                  className="w-full bg-[#121217] hover:bg-[#E91E63] text-white py-3 rounded-full font-black text-xs uppercase tracking-wider border-2 border-[#121217] fest-shadow-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {verifying ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      <span>Lookup Participant</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </form>
-
-              {checkinError && (
-                <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-300 text-rose-800 text-xs font-bold flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                  <span>{checkinError}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Attendance Confirmation Banner */}
-            {checkinSuccess && (
-              <div className="bg-emerald-50 border-3 border-emerald-500 rounded-3xl p-6 fest-shadow animate-in zoom-in-95 space-y-3">
-                <div className="flex items-center gap-2 text-emerald-800 font-black text-sm uppercase tracking-wider">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                  <span>✓ Attendance Marked</span>
-                </div>
-
-                <div className="bg-white rounded-2xl p-4 border border-emerald-300 text-xs space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-stone-500 font-semibold">Participant:</span>
-                    <strong className="text-[#121217]">{checkinSuccess.participant_name}</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-stone-500 font-semibold">Event:</span>
-                    <strong className="text-[#8E44FF]">{checkinSuccess.event_name}</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-stone-500 font-semibold">Reg ID:</span>
-                    <strong className="font-mono">{checkinSuccess.registration_id}</strong>
-                  </div>
-                  <div className="flex justify-between border-t border-stone-200 pt-2">
-                    <span className="text-stone-500 font-semibold">Check-in Time:</span>
-                    <span className="font-bold text-emerald-700">{checkinSuccess.time}</span>
-                  </div>
-                </div>
-
-                {checkinSuccess.alreadyAttended && (
-                  <p className="text-[11px] font-bold text-emerald-800">
-                    Participant was previously marked attended. Gate access confirmed.
-                  </p>
-                )}
-              </div>
-            )}
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-[#FAF8F5] border-2 border-[#121217] rounded-2xl px-4 py-2.5">
+            <p className="text-xs font-bold text-stone-600">
+              Live webcam & mobile camera scanner. Real-time participant verification and gate attendance.
+            </p>
+            <Link
+              to="/scanner"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-black text-[#8E44FF] hover:underline"
+            >
+              <span>Open Dedicated Kiosk Scanner</span>
+              <Maximize2 className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
-          {/* Right: Pass Details Preview & Action */}
-          <div className="lg:col-span-7">
-            {verifiedPass ? (
-              <div className="bg-white border-3 border-[#121217] rounded-3xl p-6 sm:p-8 fest-shadow space-y-5 animate-in fade-in">
-                <div className="flex items-start justify-between border-b-2 border-stone-200 pb-4">
-                  <div>
-                    <span className="text-[11px] font-black uppercase tracking-wider text-stone-400">
-                      Verified Entry Pass
-                    </span>
-                    <h3 className="font-display font-black text-2xl text-[#121217]">
-                      {verifiedPass.event_name}
-                    </h3>
-                  </div>
-
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-black uppercase border-2 ${
-                      verifiedPass.status === 'attended'
-                        ? 'bg-emerald-100 text-emerald-800 border-emerald-500'
-                        : verifiedPass.status === 'cancelled'
-                        ? 'bg-rose-100 text-rose-800 border-rose-500'
-                        : 'bg-amber-100 text-amber-800 border-amber-500'
-                    }`}
-                  >
-                    {verifiedPass.status === 'attended'
-                      ? '✓ Attended'
-                      : verifiedPass.status === 'cancelled'
-                      ? 'Cancelled'
-                      : 'Confirmed'}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                  <div className="bg-[#FAF8F5] p-3.5 rounded-2xl border border-stone-200">
-                    <span className="text-stone-400 text-[10px] uppercase font-black block">Participant</span>
-                    <p className="font-bold text-sm text-[#121217]">{verifiedPass.participant_name}</p>
-                    <p className="text-[11px] text-stone-500">{verifiedPass.student_email}</p>
-                  </div>
-
-                  <div className="bg-[#FAF8F5] p-3.5 rounded-2xl border border-stone-200">
-                    <span className="text-stone-400 text-[10px] uppercase font-black block">Registration ID</span>
-                    <p className="font-mono font-black text-sm text-[#8E44FF]">
-                      {verifiedPass.registration_id}
-                    </p>
-                  </div>
-
-                  <div className="bg-[#FAF8F5] p-3.5 rounded-2xl border border-stone-200">
-                    <span className="text-stone-400 text-[10px] uppercase font-black block">Institution / Dept</span>
-                    <p className="font-semibold text-stone-800 truncate">{verifiedPass.college || 'Participant'}</p>
-                    {verifiedPass.department && (
-                      <p className="text-[11px] text-stone-500">{verifiedPass.department}</p>
-                    )}
-                  </div>
-
-                  <div className="bg-[#FAF8F5] p-3.5 rounded-2xl border border-stone-200">
-                    <span className="text-stone-400 text-[10px] uppercase font-black block">Venue & Date</span>
-                    <p className="font-semibold text-stone-800">{verifiedPass.venue}</p>
-                    <p className="text-[11px] text-stone-500">{verifiedPass.event_date}</p>
-                  </div>
-                </div>
-
-                {verifiedPass.team_name && (
-                  <div className="bg-purple-50 p-3.5 rounded-2xl border border-purple-200 text-xs">
-                    <span className="text-purple-600 text-[10px] font-black uppercase block">Team</span>
-                    <p className="font-bold text-[#8E44FF]">{verifiedPass.team_name}</p>
-                    {verifiedPass.team_members?.length > 0 && (
-                      <p className="text-[11px] text-stone-500 mt-1">
-                        Squad: {verifiedPass.team_members.join(', ')}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Mark Attended Action Button */}
-                <div className="pt-2">
-                  {verifiedPass.status === 'attended' ? (
-                    <div className="w-full py-3.5 rounded-full bg-emerald-100 text-emerald-800 border-2 border-emerald-400 font-black text-xs uppercase tracking-wider text-center flex items-center justify-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      Attendance Already Recorded
-                    </div>
-                  ) : verifiedPass.status === 'cancelled' ? (
-                    <div className="w-full py-3.5 rounded-full bg-rose-100 text-rose-800 border-2 border-rose-400 font-black text-xs uppercase tracking-wider text-center">
-                      Registration Cancelled — Gate Entry Not Permitted
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleMarkAttended(verifiedPass.id || verifiedPass.qr_token)}
-                      disabled={loading}
-                      className="w-full py-4 rounded-full bg-[#7ED957] hover:bg-[#6ec24a] text-[#121217] font-black text-sm uppercase tracking-wider border-2 border-[#121217] fest-shadow transition-all flex items-center justify-center gap-2"
-                    >
-                      <Check className="w-5 h-5 stroke-[3]" />
-                      Mark Attended
-                    </button>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="bg-[#FAF8F5] border-3 border-dashed border-stone-300 rounded-3xl p-12 text-center text-stone-400 space-y-2">
-                <QrCode className="w-12 h-12 mx-auto stroke-1" />
-                <p className="font-bold text-sm">Scan QR pass or enter code on the left</p>
-                <p className="text-xs text-stone-400">
-                  Participant details and gate check-in button will appear here.
-                </p>
-              </div>
-            )}
-          </div>
+          <RealTimeQRScanner
+            onAttendanceMarked={fetchAttendees}
+            autoCheckInDefault={false}
+            showHistory={true}
+          />
         </div>
       )}
 

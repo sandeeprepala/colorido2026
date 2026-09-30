@@ -41,6 +41,10 @@ router.get('/admin/registrations', requireVolunteerOrAdmin, regCtrl.getAdminRegi
 router.put('/admin/registrations/:id/status', requireVolunteerOrAdmin, regCtrl.updateRegistrationStatus);
 router.delete('/registrations/:id', requireAuth, regCtrl.cancelRegistration);
 
+// Volunteer Gate Check-In & Attendee Roster
+router.post('/volunteer/checkin', requireVolunteerOrAdmin, regCtrl.checkInAttendee);
+router.get('/volunteer/attendees', requireVolunteerOrAdmin, regCtrl.getVolunteerAttendees);
+
 // Stalls (STRICTLY Admin Only - Volunteer has no access)
 router.get('/stalls', optionalAuth, stallsCtrl.getStalls);
 router.post('/stalls/apply', requireAuth, stallsCtrl.applyForStall);
@@ -57,6 +61,9 @@ router.put('/admin/leaderboards/:id/status', requireVolunteerOrAdmin, lbCtrl.upd
 router.put('/admin/leaderboards/:id/entry', requireVolunteerOrAdmin, lbCtrl.saveLeaderboardEntry);
 router.put('/admin/leaderboards/:id/teams/:entryId/points', requireVolunteerOrAdmin, lbCtrl.adjustLeaderboardPoints);
 router.delete('/admin/leaderboards/:id/entry/:entryId', requireVolunteerOrAdmin, lbCtrl.deleteLeaderboardEntry);
+router.put('/volunteer/leaderboards/:id/status', requireVolunteerOrAdmin, lbCtrl.updateLeaderboardStatus);
+router.put('/volunteer/leaderboards/:id/entry', requireVolunteerOrAdmin, lbCtrl.saveLeaderboardEntry);
+router.put('/volunteer/leaderboards/:id/teams/:entryId/points', requireVolunteerOrAdmin, lbCtrl.adjustLeaderboardPoints);
 
 // Discussion (Delete message is STRICTLY Admin Only)
 router.get('/discussion', discCtrl.getDiscussion);

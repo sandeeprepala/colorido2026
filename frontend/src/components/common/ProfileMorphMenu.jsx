@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronDown, Ticket, User, LogOut, X, ShieldCheck } from 'lucide-react';
+import { ChevronDown, Ticket, User, LogOut, X, ShieldCheck, Camera, QrCode } from 'lucide-react';
 
 const PROFILE_MORPH_STYLES = `
 :root {
@@ -203,14 +203,36 @@ export default function ProfileMorphMenu({ user, isAdmin, logout }) {
 
             {/* Menu Links */}
             <div className="py-1.5 space-y-1">
-              {(user?.role === 'admin' || user?.role === 'volunteer') && (
+              {user?.role === 'admin' && (
                 <Link
                   to="/admin"
                   onClick={() => setOpen(false)}
                   className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-bold text-stone-800 hover:bg-stone-100 rounded-xl transition-colors"
                 >
                   <ShieldCheck className="w-4 h-4 text-[#8E44FF]" />
-                  {user?.role === 'volunteer' ? 'Volunteer Portal' : 'Admin Console'}
+                  Admin Console
+                </Link>
+              )}
+
+              {user?.role === 'volunteer' && (
+                <Link
+                  to="/volunteer"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-bold text-stone-800 hover:bg-stone-100 rounded-xl transition-colors"
+                >
+                  <ShieldCheck className="w-4 h-4 text-[#8E44FF]" />
+                  Volunteer Portal
+                </Link>
+              )}
+
+              {(user?.role === 'admin' || user?.role === 'volunteer') && (
+                <Link
+                  to="/scanner"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-bold text-stone-800 hover:bg-stone-100 rounded-xl transition-colors"
+                >
+                  <Camera className="w-4 h-4 text-[#7ED957]" />
+                  Live Gate Scanner
                 </Link>
               )}
 
