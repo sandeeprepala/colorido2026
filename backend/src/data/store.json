@@ -13,6 +13,18 @@
       "created_at": "2026-09-01T10:00:00.000Z"
     },
     {
+      "id": "user-volunteer-01",
+      "name": "Festival Volunteer",
+      "email": "volunteer@colorido.fest",
+      "password": "$2b$10$HVgZ6Gzik98oF8JXoPKLzOe8su2.MVfmbAIv3Mx4OpC1/Dlt/hIn2",
+      "phone": "+91 98765 12345",
+      "college": "Apex Institute of Technology",
+      "department": "Operations Committee",
+      "year": "4th Year",
+      "role": "volunteer",
+      "created_at": "2026-09-05T10:00:00.000Z"
+    },
+    {
       "id": "user-student-01",
       "name": "Sandeep Sharma",
       "email": "sandeep@college.edu",
@@ -22,7 +34,7 @@
       "department": "Computer Science & Engineering",
       "year": "3rd Year",
       "student_id": "CS23B1042",
-      "role": "student",
+      "role": "user",
       "created_at": "2026-09-10T11:00:00.000Z"
     },
     {
@@ -35,7 +47,7 @@
       "department": "Electronics & Communication",
       "year": "2nd Year",
       "student_id": "EC24B2019",
-      "role": "student",
+      "role": "user",
       "created_at": "2026-09-12T14:30:00.000Z"
     },
     {
@@ -48,7 +60,7 @@
       "department": "Mechanical Engineering",
       "year": "4th Year",
       "student_id": "ME22B3005",
-      "role": "student",
+      "role": "user",
       "created_at": "2026-09-14T09:15:00.000Z"
     }
   ],
@@ -1077,7 +1089,7 @@
       "id": "msg-01",
       "user_id": "user-student-03",
       "user_name": "Rahul Verma",
-      "user_role": "student",
+      "user_role": "user",
       "user_dept": "Mechanical",
       "message": "Anyone joining the Futsal Thunder tournament? We are looking for a goalkeeper for our second squad!",
       "created_at": "2026-09-28T08:50:10.840Z"
@@ -1086,7 +1098,7 @@
       "id": "msg-02",
       "user_id": "user-student-01",
       "user_name": "Sandeep Sharma",
-      "user_role": "student",
+      "user_role": "user",
       "user_dept": "Computer Science",
       "message": "Yes! Our team Thunder XI registered for both Box Cricket and Futsal. The competition looks intense this year! 🔥",
       "created_at": "2026-09-28T09:20:10.840Z"
@@ -1095,7 +1107,7 @@
       "id": "msg-03",
       "user_id": "user-student-02",
       "user_name": "Priya Patel",
-      "user_role": "student",
+      "user_role": "user",
       "user_dept": "Electronics",
       "message": "Does anyone know if the Code Clash Round 1 MCQs require custom laptops or will CSE block desktops be provided?",
       "created_at": "2026-09-28T10:02:10.840Z"
@@ -1113,7 +1125,7 @@
       "id": "msg-05",
       "user_id": "user-student-01",
       "user_name": "Sandeep Sharma",
-      "user_role": "student",
+      "user_role": "user",
       "user_dept": "Computer Science",
       "message": "Super excited for the Battle of the Bands on night 2! Who else is attending?",
       "created_at": "2026-09-28T11:38:10.840Z"
@@ -1131,7 +1143,7 @@
       "id": "msg-98a12a37-260e-4892-b873-c711368f48d7",
       "user_id": "user-student-01",
       "user_name": "Sandeep Sharma",
-      "user_role": "student",
+      "user_role": "user",
       "user_dept": "Computer Science & Engineering",
       "message": "dk bro",
       "created_at": "2026-09-28T12:10:46.455Z"

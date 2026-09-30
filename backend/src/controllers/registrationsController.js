@@ -230,13 +230,32 @@ export const getRegistrationById = async (req, res) => {
  */
 export const verifyQrToken = async (req, res) => {
   try {
-    const { token } = req.params;
-    const reg = db.getRegistrationByQrToken(token) || db.getRegistrationById(token);
+    let { token } = req.params;
+    if (!token) {
+      return res.status(400).json({ verified: false, error: 'Pass token or registration ID is required.' });
+    }
+
+    token = decodeURIComponent(token).trim();
+    if (token.includes('/registration/verify/')) {
+      token = token.split('/registration/verify/')[1]?.split('?')[0]?.split('#')[0] || token;
+    }
+
+    // Lookup by qr_token, id, or registration_id (case-insensitive)
+    let reg = db.getRegistrationByQrToken(token) || db.getRegistrationById(token);
+    if (!reg) {
+      const lower = token.toLowerCase();
+      reg = db.getAllRegistrations().find(
+        (r) =>
+          r.qr_token?.toLowerCase() === lower ||
+          r.registration_id?.toLowerCase() === lower ||
+          r.id?.toLowerCase() === lower
+      );
+    }
 
     if (!reg) {
       return res.status(404).json({
         verified: false,
-        error: 'Invalid QR code. No festival registration matches this token.',
+        error: 'Invalid QR code. No festival registration matches this token or ID.',
       });
     }
 
@@ -244,21 +263,30 @@ export const verifyQrToken = async (req, res) => {
 
     return res.json({
       verified: true,
+      id: reg.id,
       status: reg.status,
       participant_name: reg.student_name,
       student_email: reg.student_email,
+      student_phone: reg.student_phone || reg.registration_data?.phone || 'N/A',
       college: reg.college,
       department: reg.department,
+      year: reg.year || reg.registration_data?.year || '',
+      student_id_number: reg.student_id_number || reg.registration_data?.student_id_number || '',
       registration_id: reg.registration_id,
+      qr_token: reg.qr_token,
+      event_id: reg.event_id,
       event_name: reg.event_name,
+      event_category: event?.category || reg.event_category || 'Festival Event',
       event_date: event?.event_date || reg.event_date,
       venue: event?.venue || reg.venue,
       start_time: event?.start_time || reg.start_time,
       team_name: reg.registration_data?.team_name || null,
       team_members: reg.registration_data?.team_members || [],
       registered_at: reg.registered_at,
+      checkin_time: reg.checkin_time || null,
     });
   } catch (err) {
+    console.error('verifyQrToken error:', err);
     return res.status(500).json({ verified: false, error: 'Verification error occurred.' });
   }
 };
@@ -332,5 +360,89 @@ export const updateRegistrationStatus = async (req, res) => {
   } catch (err) {
     console.error('updateRegistrationStatus error:', err);
     return res.status(500).json({ error: 'Failed to update registration status.' });
+  }
+};
+
+export const checkInAttendee = async (req, res) => {
+  try {
+    let { token, registrationId, id } = req.body;
+    let identifier = token || registrationId || id;
+    if (!identifier) {
+      return res.status(400).json({ error: 'Pass token or registration ID is required for check-in.' });
+    }
+
+    identifier = String(identifier).trim();
+    if (identifier.includes('/registration/verify/')) {
+      identifier = identifier.split('/registration/verify/')[1]?.split('?')[0]?.split('#')[0] || identifier;
+    }
+
+    let reg = db.getRegistrationByQrToken(identifier) || db.getRegistrationById(identifier);
+    if (!reg) {
+      const lower = identifier.toLowerCase();
+      reg = db.getAllRegistrations().find(
+        (r) =>
+          r.qr_token?.toLowerCase() === lower ||
+          r.registration_id?.toLowerCase() === lower ||
+          r.id?.toLowerCase() === lower
+      );
+    }
+
+    if (!reg) {
+      return res.status(404).json({ error: 'No festival registration found matching this pass token or ID.' });
+    }
+
+    const alreadyAttended = reg.status === 'attended';
+    const checkinTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    if (!alreadyAttended) {
+      await db.updateRegistrationStatus(reg.id, 'attended', { checkin_time: checkinTime });
+    }
+
+    return res.json({
+      success: true,
+      alreadyAttended,
+      status: 'attended',
+      time: reg.checkin_time || checkinTime,
+      participant_name: reg.student_name,
+      student_email: reg.student_email,
+      student_phone: reg.student_phone || reg.registration_data?.phone || 'N/A',
+      college: reg.college,
+      department: reg.department,
+      registration_id: reg.registration_id,
+      event_name: reg.event_name,
+    });
+  } catch (err) {
+    console.error('checkInAttendee error:', err);
+    return res.status(500).json({ error: 'Failed to record check-in.' });
+  }
+};
+
+export const getVolunteerAttendees = async (req, res) => {
+  try {
+    const { eventId, search, status } = req.query;
+    let registrations = db.getAllRegistrations();
+
+    if (eventId && eventId !== 'all') {
+      registrations = registrations.filter((r) => r.event_id === eventId);
+    }
+    if (status && status !== 'all') {
+      registrations = registrations.filter((r) => r.status === status);
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      registrations = registrations.filter(
+        (r) =>
+          r.student_name?.toLowerCase().includes(q) ||
+          r.student_email?.toLowerCase().includes(q) ||
+          r.registration_id?.toLowerCase().includes(q) ||
+          r.college?.toLowerCase().includes(q) ||
+          r.event_name?.toLowerCase().includes(q)
+      );
+    }
+
+    return res.json({ attendees: registrations });
+  } catch (err) {
+    console.error('getVolunteerAttendees error:', err);
+    return res.status(500).json({ error: 'Failed to retrieve attendees roster.' });
   }
 };

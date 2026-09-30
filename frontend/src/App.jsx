@@ -25,9 +25,13 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import MyFestivalPage from './pages/MyFestivalPage';
+import CertificatesPage from './pages/CertificatesPage';
 import AdminDashboard from './pages/AdminDashboard';
+import VolunteerDashboard from './pages/VolunteerDashboard';
+import RealTimeScannerPage from './pages/RealTimeScannerPage';
 import VerifyRegistrationPage from './pages/VerifyRegistrationPage';
 import VerifyCertificatePage from './pages/VerifyCertificatePage';
+import RoleRoute from './components/common/RoleRoute';
 
 export default function App() {
   useEffect(() => {
@@ -59,11 +63,63 @@ export default function App() {
               <Route path="/discussion" element={<DiscussionPage />} />
               <Route path="/gallery" element={<GalleryPage />} />
               <Route path="/about" element={<AboutPage />} />
+              <Route path="/certificates" element={<CertificatesPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/my-festival" element={<MyFestivalPage />} />
-              <Route path="/admin" element={<AdminDashboard />} />
+
+              {/* Authenticated User/Volunteer/Admin Routes */}
+              <Route
+                path="/profile"
+                element={
+                  <RoleRoute allowedRoles={['user', 'volunteer', 'admin']}>
+                    <ProfilePage />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/my-festival"
+                element={
+                  <RoleRoute allowedRoles={['user', 'volunteer', 'admin']}>
+                    <MyFestivalPage />
+                  </RoleRoute>
+                }
+              />
+
+              {/* Volunteer & Admin Operations Portal */}
+              <Route
+                path="/volunteer"
+                element={
+                  <RoleRoute allowedRoles={['volunteer', 'admin']}>
+                    <VolunteerDashboard />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/scanner"
+                element={
+                  <RoleRoute allowedRoles={['volunteer', 'admin']}>
+                    <RealTimeScannerPage />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/scan"
+                element={
+                  <RoleRoute allowedRoles={['volunteer', 'admin']}>
+                    <RealTimeScannerPage />
+                  </RoleRoute>
+                }
+              />
+
+              {/* Full Festival Administration Console */}
+              <Route
+                path="/admin"
+                element={
+                  <RoleRoute allowedRoles={['admin']}>
+                    <AdminDashboard />
+                  </RoleRoute>
+                }
+              />
 
               {/* Public Scanned Verification Routes */}
               <Route path="/registration/verify/:token" element={<VerifyRegistrationPage />} />

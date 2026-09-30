@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   ShieldCheck, Users, Calendar, Ticket, Store, Trophy, Mail, 
   Award, MessageSquare, Plus, Trash2, Edit3, CheckCircle2, 
   XCircle, Download, Send, Search, RefreshCw, AlertCircle, Eye, ArrowUpRight,
-  PanelLeftClose, PanelLeftOpen
+  PanelLeftClose, PanelLeftOpen, Camera
 } from 'lucide-react';
 import { 
   adminAPI, eventsAPI, registrationsAPI, stallsAPI, 
@@ -1043,6 +1043,13 @@ export default function AdminDashboard() {
             </div>
 
             <div className="flex items-center gap-3">
+              <Link
+                to="/scanner"
+                className="bg-[#7ED957] hover:bg-[#6ec24a] text-[#121217] px-4 py-2 rounded-full font-black text-xs border border-[#121217] fest-shadow-sm flex items-center gap-1.5 transition-all"
+              >
+                <Camera className="w-3.5 h-3.5" />
+                <span>LIVE SCANNER</span>
+              </Link>
               <button
                 onClick={handleExportCSV}
                 className="bg-[#121217] hover:bg-[#8E44FF] text-white px-4 py-2 rounded-full font-black text-xs border border-[#121217] fest-shadow-sm flex items-center gap-1.5"

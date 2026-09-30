@@ -16,6 +16,77 @@ export const pool = new Pool({
   connectionTimeoutMillis: 5000,
 });
 
+const initialRegistrations = [
+  {
+    id: 'reg-demo-01',
+    event_id: 'evt-tech-01',
+    event_name: 'Code Clash 2026',
+    event_category: 'Technical',
+    event_date: '2026-10-18',
+    start_time: '10:00 AM',
+    venue: 'Turing Computing Lab, Innovation Block',
+    student_id: 'user-student-01',
+    student_name: 'Sandeep Sharma',
+    student_email: 'sandeep@college.edu',
+    student_phone: '+91 91234 56789',
+    college: 'Apex Institute of Technology',
+    department: 'Computer Science & Engineering',
+    year: '3rd Year',
+    student_id_number: 'CS23B1042',
+    registration_id: 'COL-2026-8F92K',
+    qr_token: 'qr-col26-8f92k-sandeep',
+    status: 'confirmed',
+    registered_at: '2026-09-26T11:50:10.840Z',
+  },
+  {
+    id: 'reg-demo-02',
+    event_id: 'evt-tech-02',
+    event_name: 'Web Blitz Sprint',
+    event_category: 'Technical',
+    event_date: '2026-10-18',
+    start_time: '11:00 AM',
+    venue: 'IT Software Lab 3, Innovation Block',
+    student_id: 'user-student-02',
+    student_name: 'Priya Patel',
+    student_email: 'priya@college.edu',
+    student_phone: '+91 98989 89898',
+    college: 'Apex Institute of Technology',
+    department: 'Electronics & Communication',
+    year: '2nd Year',
+    student_id_number: 'EC24B2019',
+    registration_id: 'COL-2026-W3B91',
+    qr_token: 'qr-col26-w3b91-priya',
+    status: 'attended',
+    checkin_time: '10:45 AM',
+    registered_at: '2026-09-27T10:15:00.000Z',
+  },
+  {
+    id: 'reg-demo-03',
+    event_id: 'evt-tech-03',
+    event_name: 'Robo Grand Prix',
+    event_category: 'Robotics',
+    event_date: '2026-10-19',
+    start_time: '09:30 AM',
+    venue: 'Mechanical Courtyard Arena',
+    student_id: 'user-student-03',
+    student_name: 'Rahul Verma',
+    student_email: 'rahul@college.edu',
+    student_phone: '+91 97777 66666',
+    college: 'Metro College of Engineering',
+    department: 'Mechanical Engineering',
+    year: '4th Year',
+    student_id_number: 'ME22B3005',
+    registration_id: 'COL-2026-ROBO7',
+    qr_token: 'qr-col26-robo7-rahul',
+    registration_data: {
+      team_name: 'Apex Mecha Titans',
+      team_members: ['Rahul Verma', 'Karan Johar', 'Neha Dixit'],
+    },
+    status: 'confirmed',
+    registered_at: '2026-09-28T09:00:00.000Z',
+  },
+];
+
 let state = {
   profiles: [
     {
@@ -58,7 +129,7 @@ let state = {
   stalls: initialStalls || [],
   leaderboards: initialLeaderboards || [],
   discussion: (initialDiscussion || []).map((m) => ({ ...m })),
-  registrations: [],
+  registrations: initialRegistrations,
   certificates: [],
   stallApplications: [],
   emailLogs: [],
@@ -152,10 +223,12 @@ export const syncFromPostgres = async () => {
       }
     }
 
-    state.registrations = regsRes.rows.map((r) => ({
-      ...r,
-      registration_data: typeof r.registration_data === 'string' ? JSON.parse(r.registration_data) : (r.registration_data || {}),
-    }));
+    if (regsRes.rows.length > 0) {
+      state.registrations = regsRes.rows.map((r) => ({
+        ...r,
+        registration_data: typeof r.registration_data === 'string' ? JSON.parse(r.registration_data) : (r.registration_data || {}),
+      }));
+    }
     state.certificates = certsRes.rows.map((c) => ({
       ...c,
       issued_date: c.issued_date ? new Date(c.issued_date).toISOString().split('T')[0] : '',
@@ -465,12 +538,15 @@ export const db = {
     }
     return state.registrations[idx];
   },
-  updateRegistrationStatus: async (id, status) => {
-    const idx = state.registrations.findIndex((r) => r.id === id || r.registration_id === id);
+  updateRegistrationStatus: async (id, status, extra = {}) => {
+    const idx = state.registrations.findIndex((r) => r.id === id || r.registration_id === id || r.qr_token === id);
     if (idx === -1) return null;
     state.registrations[idx].status = status;
+    if (extra.checkin_time) {
+      state.registrations[idx].checkin_time = extra.checkin_time;
+    }
     try {
-      await pool.query('UPDATE event_registrations SET status = $1 WHERE id = $2 OR registration_id = $2', [status, id]);
+      await pool.query('UPDATE event_registrations SET status = $1 WHERE id = $2 OR registration_id = $2 OR qr_token = $2', [status, id]);
     } catch (e) {
       console.error('[Database] Error updating registration status in PG:', e.message);
     }

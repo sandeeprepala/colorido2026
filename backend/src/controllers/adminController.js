@@ -8,7 +8,7 @@ export const getAdminStats = async (req, res) => {
     const stalls = db.getAllStalls();
     const stallApps = db.getAllStallApplications();
 
-    const students = users.filter((u) => u.role === 'student');
+    const students = users.filter((u) => u.role === 'user' || u.role === 'student');
     const confirmedRegs = registrations.filter((r) => r.status === 'confirmed');
     const approvedStalls = stalls.filter((s) => s.status === 'occupied');
     const pendingStallApps = stallApps.filter((a) => a.status === 'pending');
