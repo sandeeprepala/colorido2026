@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import confetti from 'canvas-confetti';
-import { X, CheckCircle2, AlertCircle, Plus, Trash2, Calendar, MapPin, Sparkles } from 'lucide-react';
+import { X, CheckCircle2, AlertCircle, Plus, Trash2, Calendar, MapPin, Sparkles, ExternalLink, ShieldCheck } from 'lucide-react';
 import { registrationsAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import MorphSelect from '../common/MorphSelect';
@@ -85,7 +85,14 @@ export default function RegistrationModal({ event, onClose, onSuccess }) {
       };
 
       const res = await registrationsAPI.registerForEvent(event.id, payload);
-      setConfirmedRegistration(res.data.registration);
+      const regData = res.data.registration;
+      setConfirmedRegistration(regData);
+
+      // Cache registration locally for instant verification display
+      try {
+        localStorage.setItem(`colorido_last_pass_${regData.qr_token}`, JSON.stringify(regData));
+        localStorage.setItem('colorido_latest_registration', JSON.stringify(regData));
+      } catch (e) {}
 
       // Trigger celebratory confetti
       confetti({
@@ -190,6 +197,19 @@ export default function RegistrationModal({ event, onClose, onSuccess }) {
                 <p className="text-xs font-bold text-stone-600 mt-3">
                   "Show this QR code at the event entrance."
                 </p>
+
+                <div className="mt-4 pt-3 border-t border-stone-200">
+                  <a
+                    href={APP_CONFIG.getRegistrationVerifyUrl(confirmedRegistration.qr_token)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-wider rounded-xl border-2 border-[#121217] fest-shadow transition-all"
+                  >
+                    <ShieldCheck className="w-4 h-4" />
+                    Open Live Verification Pass
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
               </div>
 
               <p className="text-xs text-stone-500 mb-6">

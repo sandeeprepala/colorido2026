@@ -123,6 +123,9 @@ export default function App() {
 
               {/* Public Scanned Verification Routes */}
               <Route path="/registration/verify/:token" element={<VerifyRegistrationPage />} />
+              <Route path="/registration/verify" element={<VerifyRegistrationPage />} />
+              <Route path="/verify/:token" element={<VerifyRegistrationPage />} />
+              <Route path="/verify/registration/:token" element={<VerifyRegistrationPage />} />
               <Route path="/certificate/verify/:certificateId" element={<VerifyCertificatePage />} />
 
               {/* Catch all */}
