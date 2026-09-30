@@ -84,6 +84,7 @@ export const discussionAPI = {
 };
 
 export const certificatesAPI = {
+  getPublicCertificates: (params) => api.get('/certificates', { params }),
   getMyCertificates: () => api.get('/certificates/my'),
   verifyCertificate: (certificateId) => api.get(`/certificates/verify/${certificateId}`),
   getAdminCertificates: () => api.get('/admin/certificates'),
@@ -92,12 +93,22 @@ export const certificatesAPI = {
 
 export const emailAPI = {
   sendBroadcast: (data) => api.post('/admin/email/send', data),
+  sendTestEmail: (data) => api.post('/admin/email/test', data),
   getEmailLogs: () => api.get('/admin/email/logs'),
   getMyInbox: () => api.get('/email/inbox/my'),
 };
 
 export const adminAPI = {
   getStats: () => api.get('/admin/stats'),
+};
+
+export const volunteerAPI = {
+  checkIn: (data) => api.post('/volunteer/checkin', data),
+  getAttendees: (params) => api.get('/volunteer/attendees', { params }),
+  updateRegistrationStatus: (id, data) => api.put(`/admin/registrations/${id}/status`, data),
+  updateMatchStatus: (id, data) => api.put(`/volunteer/leaderboards/${id}/status`, data),
+  saveMatchEntry: (id, data) => api.put(`/volunteer/leaderboards/${id}/entry`, data),
+  adjustMatchPoints: (id, entryId, data) => api.put(`/volunteer/leaderboards/${id}/teams/${entryId}/points`, data),
 };
 
 export const chatAPI = {

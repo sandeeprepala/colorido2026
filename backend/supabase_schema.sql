@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     department TEXT,
     year TEXT,
     student_id TEXT,
-    role TEXT DEFAULT 'student' CHECK (role IN ('student', 'admin')),
+    role TEXT DEFAULT 'user' CHECK (role IN ('user', 'volunteer', 'admin')),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS discussion_messages (
     id TEXT PRIMARY KEY,
     user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
     user_name TEXT NOT NULL,
-    user_role TEXT DEFAULT 'student',
+    user_role TEXT DEFAULT 'user',
     user_dept TEXT,
     message TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()

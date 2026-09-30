@@ -23,8 +23,8 @@ export const postMessage = async (req, res) => {
     const newMsg = {
       id: 'msg-' + uuidv4(),
       user_id: user.id || null,
-      user_name: user.name || 'Anonymous Student',
-      user_role: user.role || 'student',
+      user_name: user.name || 'Anonymous User',
+      user_role: user.role || 'user',
       user_dept: user.department || 'Festival Member',
       message: message.trim(),
       created_at: new Date().toISOString(),

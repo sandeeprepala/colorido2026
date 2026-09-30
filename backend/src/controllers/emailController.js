@@ -79,3 +79,39 @@ export const getMyInbox = async (req, res) => {
     return res.status(500).json({ error: 'Failed to fetch your festival inbox.' });
   }
 };
+
+export const sendTestEmail = async (req, res) => {
+  try {
+    const targetEmail = req.body.to || req.user?.email;
+    if (!targetEmail) {
+      return res.status(400).json({ error: 'Recipient email address is required.' });
+    }
+
+    const testRecord = await sendEmail({
+      to: targetEmail,
+      recipientName: req.user?.name || 'Festival Participant',
+      subject: "🎉 COLORIDO '26: Test Email Notification",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 550px; margin: 0 auto; background: #FAF8F5; padding: 24px; border-radius: 12px; border: 2px solid #121217;">
+          <h2 style="color: #E91E63; margin-top: 0;">COLORIDO '26 Email System Working!</h2>
+          <p>Hello <strong>${req.user?.name || 'Participant'}</strong>,</p>
+          <p>This is a live test verifying that festival updates, entry passes, and achievement certificates will be delivered directly to your inbox.</p>
+          <div style="background: #121217; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; text-align: center; margin: 20px 0;">
+            ✓ SMTP Dispatch Verified &amp; Active
+          </div>
+          <p style="font-size: 11px; color: #777;">Sent by COLORIDO '26 Festival Organizing Committee.</p>
+        </div>
+      `,
+      text: "COLORIDO '26 Email System is operational. Test notification delivered successfully.",
+      type: 'test_notification',
+    });
+
+    return res.json({
+      message: `Test email sent to ${targetEmail}`,
+      status: testRecord.status,
+      log: testRecord,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to send test email: ' + err.message });
+  }
+};

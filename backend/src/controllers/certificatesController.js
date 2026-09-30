@@ -11,6 +11,39 @@ export const getMyCertificates = async (req, res) => {
   }
 };
 
+export const getPublicCertificates = async (req, res) => {
+  try {
+    const { search, email, event_id } = req.query;
+    let certs = db.getAllCertificates();
+
+    if (email) {
+      const cleanEmail = email.trim().toLowerCase();
+      certs = certs.filter((c) => c.participant_email?.toLowerCase() === cleanEmail);
+    }
+
+    if (event_id) {
+      certs = certs.filter((c) => c.event_id === event_id);
+    }
+
+    if (search && search.trim()) {
+      const q = search.trim().toLowerCase();
+      certs = certs.filter(
+        (c) =>
+          c.certificate_id?.toLowerCase().includes(q) ||
+          c.participant_name?.toLowerCase().includes(q) ||
+          c.participant_email?.toLowerCase().includes(q) ||
+          c.event_name?.toLowerCase().includes(q) ||
+          c.achievement?.toLowerCase().includes(q)
+      );
+    }
+
+    return res.json({ certificates: certs, total: certs.length });
+  } catch (err) {
+    console.error('getPublicCertificates error:', err);
+    return res.status(500).json({ error: 'Failed to retrieve certificates.' });
+  }
+};
+
 export const verifyCertificate = async (req, res) => {
   try {
     const { certificateId } = req.params;
@@ -87,6 +120,8 @@ export const generateCertificates = async (req, res) => {
         id: 'cert-' + uuidv4(),
         certificate_id: certId,
         registration_id: reg.id,
+        user_id: reg.student_id || null,
+        student_id: reg.student_id || null,
         event_id: event.id,
         event_name: event.name,
         participant_name: reg.student_name,

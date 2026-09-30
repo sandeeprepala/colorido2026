@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle2, XCircle, ShieldCheck, Calendar, MapPin, Users, Ticket, ArrowLeft } from 'lucide-react';
-import { registrationsAPI } from '../services/api';
+import { CheckCircle2, XCircle, ShieldCheck, ArrowLeft, Check, AlertCircle } from 'lucide-react';
+import { registrationsAPI, volunteerAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function VerifyRegistrationPage() {
   const { token } = useParams();
+  const { user, isVolunteer, isAdmin, isAuthenticated } = useAuth();
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Attendance marking state (for volunteer / admin only)
+  const [markingAttended, setMarkingAttended] = useState(false);
+  const [markError, setMarkError] = useState('');
+  const [checkInDone, setCheckInDone] = useState(null);
+
+  const canMarkAttendance = isAuthenticated && (isVolunteer || isAdmin);
 
   useEffect(() => {
     const verify = async () => {
@@ -22,6 +32,35 @@ export default function VerifyRegistrationPage() {
     };
     verify();
   }, [token]);
+
+  const handleMarkAttendance = async () => {
+    if (!canMarkAttendance || !data) return;
+
+    setMarkingAttended(true);
+    setMarkError('');
+    try {
+      const res = await volunteerAPI.checkIn({
+        token,
+        registrationId: data.registration_id,
+        id: data.id,
+      });
+
+      const checkinTime = res.data.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      setCheckInDone({
+        participant_name: data.participant_name,
+        event_name: data.event_name,
+        time: checkinTime,
+        alreadyAttended: !!res.data.alreadyAttended,
+      });
+
+      setData((prev) => ({ ...prev, status: 'attended' }));
+    } catch (err) {
+      setMarkError(err.response?.data?.error || 'Failed to mark attendance.');
+    } finally {
+      setMarkingAttended(false);
+    }
+  };
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
@@ -49,7 +88,7 @@ export default function VerifyRegistrationPage() {
 
         {loading ? (
           <div className="py-12">
-            <div className="w-10 h-10 border-4 border-[#121217] border-t-[#E91E63] rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="w-10 h-10 border-4 border-[#121217] border-t-[#E91E63] rounded-full animate-spin mx-auto mb-4" />
             <p className="font-bold text-xs text-stone-500">Scanning cryptographic entry pass...</p>
           </div>
         ) : error ? (
@@ -96,6 +135,21 @@ export default function VerifyRegistrationPage() {
               </div>
 
               <div className="flex justify-between items-center border-b border-stone-200 pb-2">
+                <span className="text-stone-500">Pass Status:</span>
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase border ${
+                    data.status === 'attended'
+                      ? 'bg-emerald-100 text-emerald-800 border-emerald-400'
+                      : data.status === 'cancelled'
+                      ? 'bg-rose-100 text-rose-800 border-rose-400'
+                      : 'bg-amber-100 text-amber-800 border-amber-400'
+                  }`}
+                >
+                  {data.status}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center border-b border-stone-200 pb-2">
                 <span className="text-stone-500">Institution:</span>
                 <span className="text-stone-800 text-right truncate max-w-[220px]">{data.college}</span>
               </div>
@@ -124,6 +178,54 @@ export default function VerifyRegistrationPage() {
                 </div>
               )}
             </div>
+
+            {/* Attendance Action & Status (VOLUNTEER & ADMIN ONLY) */}
+            {canMarkAttendance && (
+              <div className="space-y-3 pt-1">
+                {checkInDone ? (
+                  <div className="bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-4 text-emerald-900 text-xs font-semibold space-y-1.5 animate-in fade-in">
+                    <div className="flex items-center justify-center gap-1.5 font-black text-sm text-emerald-800">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                      <span>✓ Attendance Marked</span>
+                    </div>
+                    <div className="text-center font-bold text-sm text-[#121217]">
+                      {checkInDone.participant_name}
+                    </div>
+                    <div className="text-center text-xs text-[#8E44FF] font-bold">
+                      {checkInDone.event_name}
+                    </div>
+                    <div className="text-center text-[11px] text-stone-500">
+                      Check-in Time: <strong className="text-stone-800">{checkInDone.time}</strong>
+                    </div>
+                  </div>
+                ) : data.status === 'attended' ? (
+                  <div className="bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-4 text-emerald-900 text-xs font-bold text-center flex items-center justify-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>Participant Already Marked Attended</span>
+                  </div>
+                ) : data.status === 'cancelled' ? (
+                  <div className="bg-rose-50 border-2 border-rose-300 rounded-2xl p-3 text-rose-800 text-xs font-bold text-center">
+                    Registration Cancelled — Cannot Mark Attendance
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleMarkAttendance}
+                    disabled={markingAttended}
+                    className="w-full py-4 rounded-full bg-[#7ED957] hover:bg-[#6ec24a] text-[#121217] font-black text-sm uppercase tracking-wider border-2 border-[#121217] fest-shadow transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    <Check className="w-5 h-5 stroke-[3]" />
+                    {markingAttended ? 'Recording...' : 'Mark Attended'}
+                  </button>
+                )}
+
+                {markError && (
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-300 text-rose-700 text-xs font-bold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                    <span>{markError}</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Security Footnote */}
             <div className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-stone-500">
