@@ -125,10 +125,13 @@ export default function HomePage() {
                   <Calendar className="w-4 h-4 text-[#FF7A00]" />
                   <span>OCTOBER 18 – 20, 2026</span>
                 </div>
-                <div className="flex items-center gap-2 bg-white border-2 border-[#121217] px-4 py-2 rounded-2xl fest-shadow-sm font-bold text-xs sm:text-sm text-[#121217]">
-                  <MapPin className="w-4 h-4 text-[#E91E63]" />
-                  <span>R.V.R &amp; J.C College of Engineering</span>
-                </div>
+                <Link
+                  to="/campus-map"
+                  className="flex items-center gap-2 bg-white hover:bg-[#19CFE8]/20 border-2 border-[#121217] px-4 py-2 rounded-2xl fest-shadow-sm font-bold text-xs sm:text-sm text-[#121217] transition-all hover:translate-x-0.5 hover:translate-y-0.5 group"
+                >
+                  <MapPin className="w-4 h-4 text-[#E91E63] group-hover:scale-110 transition-transform" />
+                  <span>R.V.R &amp; J.C College • 3D Map</span>
+                </Link>
               </div>
 
               {/* CTAs */}
@@ -154,10 +157,11 @@ export default function HomePage() {
                 )}
 
                 <Link
-                  to="/events"
-                  className="bg-white hover:bg-stone-100 text-[#121217] px-7 py-4 rounded-full font-black text-sm sm:text-base border-2 border-[#121217] fest-shadow transition-all"
+                  to="/campus-map"
+                  className="bg-white hover:bg-[#19CFE8]/20 text-[#121217] px-6 py-4 rounded-full font-black text-sm sm:text-base border-2 border-[#121217] fest-shadow transition-all flex items-center gap-2 group"
                 >
-                  EXPLORE EVENTS
+                  <MapPin className="w-4 h-4 text-[#E91E63] group-hover:scale-110 transition-transform" />
+                  <span>3D CAMPUS MAP</span>
                 </Link>
               </div>
 

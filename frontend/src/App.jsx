@@ -14,6 +14,7 @@ import FestivalChatbot from './components/chat/FestivalChatbot';
 import HomePage from './pages/HomePage';
 import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
+import CampusMapPage from './pages/CampusMapPage';
 import StallsPage from './pages/StallsPage';
 import SchedulePage from './pages/SchedulePage';
 import LeaderboardPage from './pages/LeaderboardPage';
@@ -51,6 +52,7 @@ export default function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/events" element={<EventsPage />} />
               <Route path="/events/:id" element={<EventDetailPage />} />
+              <Route path="/campus-map" element={<CampusMapPage />} />
               <Route path="/stalls" element={<StallsPage />} />
               <Route path="/schedule" element={<SchedulePage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />

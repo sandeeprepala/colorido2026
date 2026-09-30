@@ -18,6 +18,7 @@ export default function Navbar() {
   const allNavLinks = [
     { name: 'Home', path: '/' },
     { name: 'Events', path: '/events' },
+    { name: 'Campus Map', path: '/campus-map' },
     { name: 'Stalls', path: '/stalls' },
     { name: 'Schedule', path: '/schedule' },
     { name: 'Leaderboard', path: '/leaderboard' },
@@ -28,8 +29,8 @@ export default function Navbar() {
 
   // For Admin: remove Events, Stalls, Schedule, Leaderboard, Discussion
   const adminExcludedPaths = ['/events', '/stalls', '/schedule', '/leaderboard', '/discussion'];
-  // For Volunteer: keep only Home, Leaderboard, Discussion, About
-  const volunteerAllowedPaths = ['/', '/leaderboard', '/discussion', '/about'];
+  // For Volunteer: keep Home, Campus Map, Leaderboard, Discussion, About
+  const volunteerAllowedPaths = ['/', '/campus-map', '/leaderboard', '/discussion', '/about'];
 
   const navLinks = isAdmin
     ? allNavLinks.filter((link) => !adminExcludedPaths.includes(link.path))
